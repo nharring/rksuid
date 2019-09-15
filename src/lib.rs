@@ -13,7 +13,7 @@ pub mod ksuid {
     use chrono::prelude::*;
     use time::Duration;
 
-    #[derive(Debug, PartialOrd)]
+    #[derive(Debug, PartialOrd, Ord, Clone, Copy)]
     pub struct Ksuid {
         pub timestamp: u32,
         pub payload: u128,
@@ -102,12 +102,12 @@ pub mod ksuid {
         let base_epoch = gen_epoch();
         base_epoch + Duration::seconds(timestamp as i64)
     }
-
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ksuid::Ksuid;
     use chrono::prelude::*;
     use rand::distributions::Standard;
     use rand::prelude::*;
@@ -119,6 +119,7 @@ mod tests {
         let ksuid = ksuid::new(Some(85), None);
         assert_eq!(ksuid.timestamp, 85);
     }
+    // Creation tests
     #[test]
     fn test_new() {
         let first = ksuid::new(None, None);
@@ -141,14 +142,11 @@ mod tests {
         assert_eq!(ksuid.payload, payload);
         assert_eq!(ksuid.timestamp, timestamp);
     }
+    // SerDe tests
     #[test]
     fn test_serialize_with_random_data_returns_right_length() {
         let ksuid = ksuid::new(None, None);
         let serialized = ksuid.serialize();
-        println!(
-            "Got ksuid: {:?} which serialized to: {:?}",
-            ksuid, serialized
-        );
         assert_eq!(serialized.char_indices().count(), 27);
     }
     #[test]
@@ -158,19 +156,67 @@ mod tests {
         let ksuid2 = ksuid::deserialize(&serialized);
         assert_eq!(ksuid, ksuid2);
     }
+    // Sorting tests
+    #[test]
+    fn test_ge_le() {
+        let first = ksuid::new(Some(100), None);
+        let second = ksuid::new(Some(500), None);
+        let third = ksuid::new(Some(12321312), None);
+        assert!(first < second);
+        assert!(second < third);
+        assert!(first < third);
+    }
+    #[test]
+    fn test_sort_by_timestamp() {
+        let first = ksuid::new(Some(100), None);
+        let second = ksuid::new(Some(500), None);
+        let third = ksuid::new(Some(12321312), None);
+        let mut ksuid_vec: Vec<Ksuid> = vec![second, third, first];
+        ksuid_vec.sort();
+        assert_eq!(ksuid_vec[0], first);
+        assert_eq!(ksuid_vec[2], third);
+    }
     #[bench]
     fn bench_new_ksuid_creation(b: &mut Bencher) {
         b.iter(|| ksuid::new(None, None));
     }
-
     #[bench]
-    fn bench_create_and_serialize(b: &mut Bencher) {
-        b.iter(|| ksuid::new(None, None).serialize());
+    fn bench_new_ksuid_fixed_timestamp(b: &mut Bencher) {
+        b.iter(|| ksuid::new(Some(168582232), None));
+    }
+    #[bench]
+    fn bench_new_ksuid_fixed_payload(b: &mut Bencher) {
+        b.iter(|| ksuid::new(None, Some(123456789)));
+    }
+    #[bench]
+    fn bench_serialize(b: &mut Bencher) {
+        let ksuid = ksuid::new(None, None);
+        b.iter(|| ksuid.serialize());
     }
 
     #[bench]
     fn bench_deserialize(b: &mut Bencher) {
         let ksuid = ksuid::new(None, None).serialize();
         b.iter(|| ksuid::deserialize(&ksuid));
+    }
+
+    fn build_ksuid_vec(n: i32) -> Vec<Ksuid> {
+        let mut ksuids: Vec<Ksuid> = Vec::new();
+        for i in 0..n {
+            ksuids.push(ksuid::new(Some(i as u32), None));
+        }
+        return ksuids;
+    }
+
+    #[bench]
+    fn bench_sort(b: &mut Bencher) {
+        let mut ksuids = build_ksuid_vec(500);
+        b.iter(|| ksuids.sort());
+    }
+
+    #[bench]
+    fn bench_sort_unstable(b: &mut Bencher) {
+        let mut ksuids = build_ksuid_vec(500);
+        b.iter(|| ksuids.sort_unstable());
     }
 }

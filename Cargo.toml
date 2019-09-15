@@ -1,5 +1,5 @@
 [package]
-name = "librksuid"
+name = "rksuid"
 version = "0.1.0"
 authors = ["nharring@gmail.com"]
 edition = "2018"
