@@ -1,0 +1,12 @@
+[package]
+name = "librksuid"
+version = "0.1.0"
+authors = ["nharring@gmail.com"]
+edition = "2018"
+
+[dependencies]
+base-encode = "0.3.0"
+rand = "0.7.0"
+chrono = "0.4"
+time = "0.1"
+arrayref = "0.3.5"
