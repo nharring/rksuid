@@ -54,7 +54,7 @@ pub mod rksuid {
         }
 
         pub fn get_time(&self) -> DateTime<Utc> {
-            rksuid::to_std_epoch(self.timestamp)
+            to_std_epoch(self.timestamp)
         }
     }
 
@@ -131,6 +131,18 @@ mod tests {
         let ksuid = rksuid::new(Some(timestamp), Some(payload));
         assert_eq!(ksuid.payload, payload);
         assert_eq!(ksuid.timestamp, timestamp);
+    }
+    // Test get_time
+    #[test]
+    fn test_get_time() {
+        // Friday, July 14, 2017 2:40:00 AM
+        let timestamp: DateTime<Utc> = Utc.timestamp(1500000000, 0);
+        let epoch_offset = timestamp.signed_duration_since(rksuid::gen_epoch()).num_seconds();
+        // Sanity check the expected timestamp for the ksuid
+        assert_eq!(100000000, epoch_offset);
+        let ksuid = rksuid::new(Some(epoch_offset as u32), None);
+        let ksuid_time = ksuid.get_time();
+        assert_eq!(timestamp, ksuid_time);
     }
     // SerDe tests
     #[test]
