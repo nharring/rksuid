@@ -5,7 +5,7 @@ extern crate arrayref;
 
 extern crate test;
 
-pub mod ksuid {
+pub mod rksuid {
     use base_encode::{from_str, to_string};
     use rand::distributions::Standard;
     use rand::prelude::*;
@@ -13,18 +13,13 @@ pub mod ksuid {
     use chrono::prelude::*;
     use time::Duration;
 
-    #[derive(Debug, PartialOrd, Ord, Clone, Copy)]
+    pub const ALPHABET: &[u8; 62] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+
+    #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq)]
     pub struct Ksuid {
         pub timestamp: u32,
         pub payload: u128,
     }
-
-    impl PartialEq for Ksuid {
-        fn eq(&self, other: &Self) -> bool {
-            self.payload == other.payload && self.timestamp == other.timestamp
-        }
-    }
-    impl Eq for Ksuid {}
 
     // Creates new ksuid with optionally specified timestamp and payload
     pub fn new(timestamp: Option<u32>, payload: Option<u128>) -> Ksuid {
@@ -45,16 +40,9 @@ pub mod ksuid {
     impl Ksuid {
         // Serialize ksuid into base62 encoded string
         pub fn serialize(&self) -> String {
-            let alphabet = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-            let tstamp_be_bytes: Vec<u8> = self.timestamp.to_be_bytes().to_vec();
-            let payload_be_bytes: Vec<u8> = self.payload.to_be_bytes().to_vec();
-            let merged_bytes: Vec<u8> = tstamp_be_bytes
-                .iter()
-                .copied()
-                .chain(payload_be_bytes.iter().copied())
-                .collect();
-            let mut merged_string =
-                to_string(array_ref![merged_bytes, 0, 20], 62, alphabet).unwrap();
+            let mut all_bytes = self.timestamp.to_be_bytes().to_vec();
+            all_bytes.extend(self.payload.to_be_bytes().to_vec());
+            let mut merged_string = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
             if merged_string.char_indices().count() < 27 {
                 // We will zero pad the left side of the string to get it to the required 27
                 let num_zeros = 27 - merged_string.char_indices().count();
@@ -64,11 +52,11 @@ pub mod ksuid {
             return merged_string;
         }
     }
+    
 
     // creates new ksuid from base62 encoded string serialized representation
     pub fn deserialize(text: &str) -> Ksuid {
-        let alphabet = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
-        let bytes_from_str_be_parsed = from_str(text, 62, alphabet);
+        let bytes_from_str_be_parsed = from_str(text, 62, ALPHABET);
         if let Some(bytes_from_str_be) = bytes_from_str_be_parsed {
             let timestamp_bytes: &[u8; 4] = array_ref![bytes_from_str_be, 0, 4];
             let payload_bytes: &[u8; 16] = array_ref![bytes_from_str_be, 4, 16];
@@ -107,7 +95,7 @@ pub mod ksuid {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::ksuid::Ksuid;
+    use crate::rksuid::Ksuid;
     use chrono::prelude::*;
     use rand::distributions::Standard;
     use rand::prelude::*;
@@ -116,61 +104,61 @@ mod tests {
 
     #[test]
     fn test_new_with_timestamp() {
-        let ksuid = ksuid::new(Some(85), None);
+        let ksuid = rksuid::new(Some(85), None);
         assert_eq!(ksuid.timestamp, 85);
     }
     // Creation tests
     #[test]
     fn test_new() {
-        let first = ksuid::new(None, None);
+        let first = rksuid::new(None, None);
         thread::sleep(time::Duration::from_millis(2000));
-        let second = ksuid::new(None, None);
+        let second = rksuid::new(None, None);
         assert_ne!(first.timestamp, second.timestamp);
     }
     #[test]
     fn test_new_with_payload() {
         let payload: u128 = StdRng::from_entropy().sample(Standard);
-        let ksuid = ksuid::new(None, Some(payload));
+        let ksuid = rksuid::new(None, Some(payload));
         assert_eq!(payload, ksuid.payload);
     }
     #[test]
     fn test_new_with_payload_and_timestamp() {
         let payload: u128 = StdRng::from_entropy().sample(Standard);
-        let epoch_base = ksuid::gen_epoch();
+        let epoch_base = rksuid::gen_epoch();
         let timestamp = Utc::now().signed_duration_since(epoch_base).num_seconds() as u32;
-        let ksuid = ksuid::new(Some(timestamp), Some(payload));
+        let ksuid = rksuid::new(Some(timestamp), Some(payload));
         assert_eq!(ksuid.payload, payload);
         assert_eq!(ksuid.timestamp, timestamp);
     }
     // SerDe tests
     #[test]
     fn test_serialize_with_random_data_returns_right_length() {
-        let ksuid = ksuid::new(None, None);
+        let ksuid = rksuid::new(None, None);
         let serialized = ksuid.serialize();
         assert_eq!(serialized.char_indices().count(), 27);
     }
     #[test]
     fn test_serialize_deserialize() {
-        let ksuid = ksuid::new(None, None);
+        let ksuid = rksuid::new(None, None);
         let serialized = ksuid.serialize();
-        let ksuid2 = ksuid::deserialize(&serialized);
+        let ksuid2 = rksuid::deserialize(&serialized);
         assert_eq!(ksuid, ksuid2);
     }
     // Sorting tests
     #[test]
     fn test_ge_le() {
-        let first = ksuid::new(Some(100), None);
-        let second = ksuid::new(Some(500), None);
-        let third = ksuid::new(Some(12321312), None);
+        let first = rksuid::new(Some(100), None);
+        let second = rksuid::new(Some(500), None);
+        let third = rksuid::new(Some(12321312), None);
         assert!(first < second);
         assert!(second < third);
         assert!(first < third);
     }
     #[test]
     fn test_sort_by_timestamp() {
-        let first = ksuid::new(Some(100), None);
-        let second = ksuid::new(Some(500), None);
-        let third = ksuid::new(Some(12321312), None);
+        let first = rksuid::new(Some(100), None);
+        let second = rksuid::new(Some(500), None);
+        let third = rksuid::new(Some(12321312), None);
         let mut ksuid_vec: Vec<Ksuid> = vec![second, third, first];
         ksuid_vec.sort();
         assert_eq!(ksuid_vec[0], first);
@@ -178,32 +166,32 @@ mod tests {
     }
     #[bench]
     fn bench_new_ksuid_creation(b: &mut Bencher) {
-        b.iter(|| ksuid::new(None, None));
+        b.iter(|| rksuid::new(None, None));
     }
     #[bench]
     fn bench_new_ksuid_fixed_timestamp(b: &mut Bencher) {
-        b.iter(|| ksuid::new(Some(168582232), None));
+        b.iter(|| rksuid::new(Some(168582232), None));
     }
     #[bench]
     fn bench_new_ksuid_fixed_payload(b: &mut Bencher) {
-        b.iter(|| ksuid::new(None, Some(123456789)));
+        b.iter(|| rksuid::new(None, Some(123456789)));
     }
     #[bench]
     fn bench_serialize(b: &mut Bencher) {
-        let ksuid = ksuid::new(None, None);
+        let ksuid = rksuid::new(None, None);
         b.iter(|| ksuid.serialize());
     }
 
     #[bench]
     fn bench_deserialize(b: &mut Bencher) {
-        let ksuid = ksuid::new(None, None).serialize();
-        b.iter(|| ksuid::deserialize(&ksuid));
+        let ksuid = rksuid::new(None, None).serialize();
+        b.iter(|| rksuid::deserialize(&ksuid));
     }
 
     fn build_ksuid_vec(n: i32) -> Vec<Ksuid> {
         let mut ksuids: Vec<Ksuid> = Vec::new();
         for i in 0..n {
-            ksuids.push(ksuid::new(Some(i as u32), None));
+            ksuids.push(rksuid::new(Some(i as u32), None));
         }
         return ksuids;
     }
