@@ -2,10 +2,6 @@ sudo: false
 language: rust
 rust:
   - nightly
-matrix:
-  allow_failures:
-    - rust: nightly
-  fast_finish: true
 # necessary for `travis-cargo coveralls --no-sudo`
 addons:
   apt:
