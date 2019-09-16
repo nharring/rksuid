@@ -13,7 +13,8 @@ pub mod rksuid {
     use chrono::prelude::*;
     use time::Duration;
 
-    pub const ALPHABET: &[u8; 62] = b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
+    pub const ALPHABET: &[u8; 62] =
+        b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
     #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq)]
     pub struct Ksuid {
@@ -51,8 +52,11 @@ pub mod rksuid {
             }
             return merged_string;
         }
+
+        pub fn get_time(&self) -> DateTime<Utc> {
+            rksuid::to_std_epoch(self.timestamp)
+        }
     }
-    
 
     // creates new ksuid from base62 encoded string serialized representation
     pub fn deserialize(text: &str) -> Ksuid {
@@ -76,9 +80,7 @@ pub mod rksuid {
     }
     // Returns now as u32 seconds since the unix epoch + 14e8 (May 13, 2014)
     fn gen_timestamp() -> u32 {
-        let base_epoch = gen_epoch();
-        let now = Utc::now();
-        now.signed_duration_since(base_epoch).num_seconds() as u32
+        Utc::now().signed_duration_since(gen_epoch()).num_seconds() as u32
     }
 
     // Returns a Chrono::DateTime representing the adjusted epoch
