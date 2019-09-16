@@ -13,13 +13,15 @@ rksuid = "0.1.0"
 ```
 
 ```rust
+use rksuid;
+
 // Generate new Ksuid with current timestamp and random payload
-let ksuid = ksuid::new(None, None);
+let ksuid = rksuid::new(None, None);
 // Serialize to a base-62 encoded string
 let serialized = ksuid.serialize();
 
 // Deserialize a base-62 encoded string into a Ksuid
-let ksuid = ksuid::deserialize("1QtFxXJfPVU6NOwPOsHsaihkm8U");
+let ksuid = rksuid::deserialize("1QtFxXJfPVU6NOwPOsHsaihkm8U");
 println!("{:?}", ksuid);
 ```
 ```rust
