@@ -1,8 +1,14 @@
 [package]
 name = "rksuid"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["nharring@gmail.com"]
 edition = "2018"
+description="Rust implementation of the Segment.io KSUID format"
+repository="https://github.com/nharring/rksuid"
+readme="README.md"
+license="MIT"
+keywords=["ksuid", "uuid"]
+maintenance= {status = "actively-developed"}
 
 [dependencies]
 base-encode = "0.3.0"
