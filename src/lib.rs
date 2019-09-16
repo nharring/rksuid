@@ -103,6 +103,8 @@ mod tests {
     use rand::prelude::*;
     use std::{thread, time};
     use test::Bencher;
+    use rand::thread_rng;
+    use rand::seq::SliceRandom;
 
     #[test]
     fn test_new_with_timestamp() {
@@ -207,6 +209,7 @@ mod tests {
         for i in 0..n {
             ksuids.push(rksuid::new(Some(i as u32), None));
         }
+        ksuids.shuffle(&mut thread_rng());
         return ksuids;
     }
 
