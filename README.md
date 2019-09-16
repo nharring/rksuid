@@ -1,6 +1,8 @@
 # rksuid
  Rust implementation of Segment.io's ksuid
 
+ I have no association with Segment, just a fan of the format.
+
 # Inspiration
 Segment [published](https://segment.com/blog/a-brief-history-of-the-uuid/) a nifty UUID format and I thought it'd be fun to implement a compatible version in pure Rust as a way to learn the language more thoroughly and keep myself sharp while looking for a new coding gig. 
 
@@ -32,7 +34,7 @@ Ksuid { timestamp: 168582232, payload: 312509952699879867963141934813379438280 }
 - No unsafe code
 
 # Planned Features
-- Better perf
+- Pretty printer
 - CLI demonstrating basic usage and offering ability to "inspect" ksuids from serialized strings
 
 # Benchmark results
