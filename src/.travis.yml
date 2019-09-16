@@ -1,7 +1,6 @@
 sudo: false
 language: rust
 rust:
-  - beta
   - nightly
 matrix:
   allow_failures:
@@ -30,5 +29,4 @@ script:
       travis-cargo bench
 env:
   global:
-    # override the default `--features unstable` used for the nightly branch (optional)
     - TRAVIS_CARGO_NIGHTLY_FEATURE=nightly
