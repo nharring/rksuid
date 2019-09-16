@@ -56,6 +56,28 @@ pub mod rksuid {
         pub fn get_time(&self) -> DateTime<Utc> {
             to_std_epoch(self.timestamp)
         }
+
+        pub fn get_payload(&self) -> String {
+            let payload_bytes = self.payload.to_be_bytes().to_vec();
+            to_string(array_ref![payload_bytes, 4, 16], 16, b"0123456789ABCDEF").unwrap()
+        }
+
+        pub fn get_formatted(&self) -> String {
+        // REPRESENTATION:
+        //   String: Base62, 0 padded to 27 chars
+        //      Raw: Hex of raw big endian 20 bytes
+        // COMPONENTS:
+        //        Time: RFC 2822
+        //   Timestamp: Seconds since Ksuid epoch
+        //     Payload: Hex of u128
+            let mut all_bytes = self.timestamp.to_be_bytes().to_vec();
+            all_bytes.extend(self.payload.to_be_bytes().to_vec());
+            let all_bytes_str = to_string(array_ref![all_bytes, 0, 20], 16, b"0123456789ABCDEF").unwrap();
+            let serialized = self.serialize();
+            let ksuid_time = self.get_time();
+            let payload_str = self.get_payload();
+            format!("REPRESENTATION:\n  String: {}\n     Raw: {}\nCOMPONENTS:\n       Time: {}\n  Timestamp: {}\n    Payload: {}", serialized, all_bytes_str, ksuid_time.to_rfc2822(), self.timestamp, payload_str)
+        }
     }
 
     // creates new ksuid from base62 encoded string serialized representation
