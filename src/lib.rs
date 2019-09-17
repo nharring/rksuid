@@ -41,9 +41,9 @@ pub mod rksuid {
     impl Ksuid {
         // Serialize ksuid into base62 encoded string
         pub fn serialize(&self) -> String {
-            let mut all_bytes = self.timestamp.to_be_bytes().to_vec();
-            all_bytes.extend(self.payload.to_be_bytes().to_vec());
-            let mut merged_string = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
+            let mut merged_string: String;
+            let all_bytes = self.get_bytes();
+            merged_string = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
             if merged_string.char_indices().count() < 27 {
                 // We will zero pad the left side of the string to get it to the required 27
                 let num_zeros = 27 - merged_string.char_indices().count();
@@ -59,24 +59,44 @@ pub mod rksuid {
 
         pub fn get_payload(&self) -> String {
             let payload_bytes = self.payload.to_be_bytes().to_vec();
-            to_string(array_ref![payload_bytes, 4, 16], 16, b"0123456789ABCDEF").unwrap()
+            to_string(array_ref![payload_bytes, 0, 16], 16, b"0123456789ABCDEF").unwrap()
+        }
+
+        fn get_bytes(&self) -> Vec<u8> {
+            let all_bytes = self.timestamp.to_be_bytes().to_vec().into_iter().chain(self.payload.to_be_bytes().to_vec().into_iter()).collect();
+            return all_bytes;
+        }
+
+        pub fn get_formatted_lines(&self) -> Vec<String> {
+            // REPRESENTATION:
+            //   String: Base62, 0 padded to 27 chars
+            //      Raw: Hex of raw big endian 20 bytes
+            // COMPONENTS:
+            //        Time: RFC 2822
+            //   Timestamp: Seconds since Ksuid epoch
+            //     Payload: Hex of u128
+            let all_bytes = self.get_bytes();
+            let all_bytes_str = to_string(array_ref![all_bytes, 0, 16], 16, b"0123456789ABCDEF").unwrap();
+            let ksuid_time = self.get_time();
+            let payload_str = self.get_payload();
+            let mut output: Vec<String> = Vec::new();
+            output.push("REPRESENTATION:".to_string());
+            output.push(format!("\tString: {}", self.serialize()));
+            output.push(format!("\tRaw: {}", all_bytes_str));
+            output.push("COMPONENTS:".to_string());
+            output.push(format!("\tTime: {}", ksuid_time.to_rfc2822()));
+            output.push(format!("\tTimestamp: {}", self.timestamp));
+            output.push(format!("\tPayload: {}", payload_str));
+            return output;
         }
 
         pub fn get_formatted(&self) -> String {
-        // REPRESENTATION:
-        //   String: Base62, 0 padded to 27 chars
-        //      Raw: Hex of raw big endian 20 bytes
-        // COMPONENTS:
-        //        Time: RFC 2822
-        //   Timestamp: Seconds since Ksuid epoch
-        //     Payload: Hex of u128
-            let mut all_bytes = self.timestamp.to_be_bytes().to_vec();
-            all_bytes.extend(self.payload.to_be_bytes().to_vec());
-            let all_bytes_str = to_string(array_ref![all_bytes, 0, 20], 16, b"0123456789ABCDEF").unwrap();
-            let serialized = self.serialize();
-            let ksuid_time = self.get_time();
-            let payload_str = self.get_payload();
-            format!("REPRESENTATION:\n  String: {}\n     Raw: {}\nCOMPONENTS:\n       Time: {}\n  Timestamp: {}\n    Payload: {}", serialized, all_bytes_str, ksuid_time.to_rfc2822(), self.timestamp, payload_str)
+            let mut formatted: String = String::new();
+            for line in self.get_formatted_lines() {
+                formatted.push_str(&line);
+                formatted.push_str("\n");
+            }
+            return formatted;
         }
     }
 
@@ -182,6 +202,16 @@ mod tests {
         let serialized = ksuid.serialize();
         let ksuid2 = rksuid::deserialize(&serialized);
         assert_eq!(ksuid, ksuid2);
+    }
+    #[test]
+    fn test_get_formatted_lines() {
+        let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
+        let formatted = ksuid.get_formatted_lines();
+        assert!(!formatted.is_empty());
+        let timestamp_line = "\tTimestamp: 107608047";
+        assert_eq!(formatted[5], timestamp_line);
+        let raw_line = "\tRaw: 669F7EFB5A1CD34B5F99D1154FB6853";
+        assert_eq!(formatted[2], raw_line);
     }
     // Sorting tests
     #[test]
