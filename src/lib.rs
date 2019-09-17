@@ -1,9 +1,5 @@
-#![feature(test)]
-
 #[macro_use]
 extern crate arrayref;
-
-extern crate test;
 
 pub mod rksuid {
     use base_encode::{from_str, to_string};
@@ -63,7 +59,13 @@ pub mod rksuid {
         }
 
         fn get_bytes(&self) -> Vec<u8> {
-            let all_bytes = self.timestamp.to_be_bytes().to_vec().into_iter().chain(self.payload.to_be_bytes().to_vec().into_iter()).collect();
+            let all_bytes = self
+                .timestamp
+                .to_be_bytes()
+                .to_vec()
+                .into_iter()
+                .chain(self.payload.to_be_bytes().to_vec().into_iter())
+                .collect();
             return all_bytes;
         }
 
@@ -76,7 +78,8 @@ pub mod rksuid {
             //   Timestamp: Seconds since Ksuid epoch
             //     Payload: Hex of u128
             let all_bytes = self.get_bytes();
-            let all_bytes_str = to_string(array_ref![all_bytes, 0, 16], 16, b"0123456789ABCDEF").unwrap();
+            let all_bytes_str =
+                to_string(array_ref![all_bytes, 0, 16], 16, b"0123456789ABCDEF").unwrap();
             let ksuid_time = self.get_time();
             let payload_str = self.get_payload();
             let mut output: Vec<String> = Vec::new();
@@ -145,9 +148,6 @@ mod tests {
     use rand::distributions::Standard;
     use rand::prelude::*;
     use std::{thread, time};
-    use test::Bencher;
-    use rand::thread_rng;
-    use rand::seq::SliceRandom;
 
     #[test]
     fn test_new_with_timestamp() {
@@ -182,7 +182,9 @@ mod tests {
     fn test_get_time() {
         // Friday, July 14, 2017 2:40:00 AM
         let timestamp: DateTime<Utc> = Utc.timestamp(1500000000, 0);
-        let epoch_offset = timestamp.signed_duration_since(rksuid::gen_epoch()).num_seconds();
+        let epoch_offset = timestamp
+            .signed_duration_since(rksuid::gen_epoch())
+            .num_seconds();
         // Sanity check the expected timestamp for the ksuid
         assert_eq!(100000000, epoch_offset);
         let ksuid = rksuid::new(Some(epoch_offset as u32), None);
@@ -233,51 +235,6 @@ mod tests {
         assert_eq!(ksuid_vec[0], first);
         assert_eq!(ksuid_vec[2], third);
     }
-    #[bench]
-    fn bench_new_ksuid_creation(b: &mut Bencher) {
-        b.iter(|| rksuid::new(None, None));
-    }
-    #[bench]
-    fn bench_new_ksuid_fixed_timestamp(b: &mut Bencher) {
-        b.iter(|| rksuid::new(Some(168582232), None));
-    }
-    #[bench]
-    fn bench_new_ksuid_fixed_payload(b: &mut Bencher) {
-        b.iter(|| rksuid::new(None, Some(123456789)));
-    }
-    #[bench]
-    fn bench_serialize(b: &mut Bencher) {
-        let ksuid = rksuid::new(None, None);
-        b.iter(|| ksuid.serialize());
-    }
-
-    #[bench]
-    fn bench_deserialize(b: &mut Bencher) {
-        let ksuid = rksuid::new(None, None).serialize();
-        b.iter(|| rksuid::deserialize(&ksuid));
-    }
-
-    fn build_ksuid_vec(n: i32) -> Vec<Ksuid> {
-        let mut ksuids: Vec<Ksuid> = Vec::new();
-        for i in 0..n {
-            ksuids.push(rksuid::new(Some(i as u32), None));
-        }
-        ksuids.shuffle(&mut thread_rng());
-        return ksuids;
-    }
-
-    #[bench]
-    fn bench_sort(b: &mut Bencher) {
-        let mut ksuids = build_ksuid_vec(500);
-        b.iter(|| ksuids.sort());
-    }
-
-    #[bench]
-    fn bench_sort_unstable(b: &mut Bencher) {
-        let mut ksuids = build_ksuid_vec(500);
-        b.iter(|| ksuids.sort_unstable());
-    }
-
     fn build_segment_ksuid() -> Ksuid {
         rksuid::new(Some(107608047), Some(0xB5A1CD34B5F99D1154FB6853345C9735))
     }
