@@ -2,7 +2,6 @@
 extern crate criterion;
 extern crate rksuid;
 
-//use criterion::black_box;
 use criterion::Criterion;
 
 use rand::prelude::thread_rng;
