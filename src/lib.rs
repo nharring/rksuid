@@ -9,16 +9,28 @@ pub mod rksuid {
     use chrono::prelude::*;
     use time::Duration;
 
+    /// Base62 Alphabet which preserves lexigraphic sorting
     pub const ALPHABET: &[u8; 62] =
         b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
+    /// K-Sortable Unique ID
     #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq)]
     pub struct Ksuid {
+        /// 32 bit unsigned seconds since 2014-05-13T16:53:30Z
         pub timestamp: u32,
+        /// 128 bits of payload, usually a rand\<u128\>
         pub payload: u128,
     }
 
-    // Creates new ksuid with optionally specified timestamp and payload
+    /// Creates new Ksuid with optionally specified timestamp and payload
+    ///
+    /// # Examples
+    ///
+    /// ```
+    /// use ::rksuid::rksuid;
+    ///
+    /// let ksuid = rksuid::new(None, None);
+    /// ```
     pub fn new(timestamp: Option<u32>, payload: Option<u128>) -> Ksuid {
         let internal_timestamp = match timestamp {
             None => gen_timestamp(),
@@ -35,7 +47,18 @@ pub mod rksuid {
     }
 
     impl Ksuid {
-        // Serialize ksuid into base62 encoded string
+        /// Serialize ksuid into base62 encoded string 27 characters long
+        /// # Examples
+        ///
+        /// ```
+        /// use ::rksuid::rksuid;
+        ///
+        /// let ksuid = rksuid::new(Some(107608047), Some(0xB5A1CD34B5F99D1154FB6853345C9735));
+        /// println!("{}", ksuid.serialize());
+        /// ```
+        /// ```
+        /// 0ujtsYcgvSTl8PAuAdqWYSMnLOv
+        /// ```
         pub fn serialize(&self) -> String {
             let mut merged_string: String;
             let all_bytes = self.get_bytes();
@@ -49,15 +72,18 @@ pub mod rksuid {
             return merged_string;
         }
 
+        /// Return timestamp of Ksuid as DateTime<Utc>
         pub fn get_time(&self) -> DateTime<Utc> {
             to_std_epoch(self.timestamp)
         }
 
+        /// Returns String of payload bytes hex encoded
         pub fn get_payload(&self) -> String {
             let payload_bytes = self.payload.to_be_bytes().to_vec();
             to_string(array_ref![payload_bytes, 0, 16], 16, b"0123456789ABCDEF").unwrap()
         }
 
+        /// Get Vec<u8> of all 20 bytes of the Ksuid
         fn get_bytes(&self) -> Vec<u8> {
             let all_bytes = self
                 .timestamp
@@ -69,7 +95,8 @@ pub mod rksuid {
             return all_bytes;
         }
 
-        pub fn get_formatted_lines(&self) -> Vec<String> {
+        /// Get Vec<String> of lines in formatted output
+        pub fn get_formatted_lines(&self) -> [String; 7] {
             // REPRESENTATION:
             //   String: Base62, 0 padded to 27 chars
             //      Raw: Hex of raw big endian 20 bytes
@@ -80,22 +107,39 @@ pub mod rksuid {
             let all_bytes = self.get_bytes();
             let all_bytes_str =
                 to_string(array_ref![all_bytes, 0, 16], 16, b"0123456789ABCDEF").unwrap();
-            let ksuid_time = self.get_time();
-            let payload_str = self.get_payload();
-            let mut output: Vec<String> = Vec::new();
-            output.push("REPRESENTATION:".to_string());
-            output.push(format!("\tString: {}", self.serialize()));
-            output.push(format!("\tRaw: {}", all_bytes_str));
-            output.push("COMPONENTS:".to_string());
-            output.push(format!("\tTime: {}", ksuid_time.to_rfc2822()));
-            output.push(format!("\tTimestamp: {}", self.timestamp));
-            output.push(format!("\tPayload: {}", payload_str));
+            let output: [String; 7] = [
+                "REPRESENTATION:".to_string(),
+                format!("\tString: {}", self.serialize()),
+                format!("\tRaw: {}", all_bytes_str),
+                "COMPONENTS:".to_string(),
+                format!("\tTime: {}", self.get_time().to_rfc2822()),
+                format!("\tTimestamp: {}", self.timestamp),
+                format!("\tPayload: {}", self.get_payload()),
+            ];
             return output;
         }
 
+        /// Get 7 line formatted string with representation and components of Ksuid
+        /// suitable for printing.
+        /// # Examples
+        /// ```
+        /// use ::rksuid::rksuid;
+        ///
+        /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
+        /// println!("{}", ksuid.get_formatted());
+        /// ```
+        /// ```
+        /// REPRESENTATION:
+        ///     String: 0ujtsYcgvSTl8PAuAdqWYSMnLOv
+        ///      Raw: 0669F7EFB5A1CD34B5F99D1154FB6853345C9735
+        /// COMPONENTS:
+        ///     Time: 2017-10-09 21:00:47 -0700 PDT
+        ///     Timestamp: 107608047
+        ///     Payload: B5A1CD34B5F99D1154FB6853345C9735
+        /// ```
         pub fn get_formatted(&self) -> String {
             let mut formatted: String = String::new();
-            for line in self.get_formatted_lines() {
+            for line in self.get_formatted_lines().iter() {
                 formatted.push_str(&line);
                 formatted.push_str("\n");
             }
@@ -103,7 +147,17 @@ pub mod rksuid {
         }
     }
 
-    // creates new ksuid from base62 encoded string serialized representation
+    /// creates new ksuid from base62 encoded string serialized representation
+    /// # Examples
+    /// ```
+    /// use ::rksuid::rksuid;
+    ///
+    /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
+    /// println!("{}", ksuid.timestamp);
+    /// ```
+    /// ```
+    /// 107608047
+    /// ```
     pub fn deserialize(text: &str) -> Ksuid {
         let unpadded = text.trim_start_matches("0");
         let bytes_from_str_be_parsed = from_str(unpadded, 62, ALPHABET);
@@ -129,11 +183,32 @@ pub mod rksuid {
         Utc::now().signed_duration_since(gen_epoch()).num_seconds() as u32
     }
 
-    // Returns a Chrono::DateTime representing the adjusted epoch
+    /// Returns a Chrono::DateTime<Utc> representing the adjusted epoch
+    /// # Examples
+    /// ```
+    /// use rksuid::rksuid::gen_epoch;
+    /// let ksuid_epoch = rksuid::gen_epoch();
+    /// println!("{:?}", ksuid_epoch);
+    /// ```
+    /// ```
+    /// 2014-05-13T16:53:20Z
+    /// ```
+    ///
     pub fn gen_epoch() -> DateTime<Utc> {
         Utc.timestamp(1400000000, 0)
     }
 
+    /// Convert a u32 timestamp from a Ksuid.timestamp into DateTime<Utc>
+    /// # Examples
+    /// ```
+    /// use rksuid::rksuid::to_std_epoch;
+    ///
+    /// let some_day = rksuid::to_std_epoch(10);
+    /// println!("{:?}", some_day);
+    /// ```
+    /// ```
+    /// 2014-05-13T16:53:30Z
+    /// ```
     pub fn to_std_epoch(timestamp: u32) -> DateTime<Utc> {
         let base_epoch = gen_epoch();
         base_epoch + Duration::seconds(timestamp as i64)
