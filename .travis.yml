@@ -4,7 +4,16 @@ rust:
   - stable
   - beta
   - nightly
-
+matrix:
+  allow_failures:
+    rust:
+      - nightly
+  exclude:
+    rust:
+      - nightly
+    script:
+      - cargo bench
+  fast_finish: true
 # the main build
 script:
   - cargo build
