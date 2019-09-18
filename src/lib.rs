@@ -56,9 +56,6 @@ pub mod rksuid {
         /// let ksuid = rksuid::new(Some(107608047), Some(0xB5A1CD34B5F99D1154FB6853345C9735));
         /// println!("{}", ksuid.serialize());
         /// ```
-        /// ```
-        /// 0ujtsYcgvSTl8PAuAdqWYSMnLOv
-        /// ```
         pub fn serialize(&self) -> String {
             let mut merged_string: String;
             let all_bytes = self.get_bytes();
@@ -128,15 +125,6 @@ pub mod rksuid {
         /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
         /// println!("{}", ksuid.get_formatted());
         /// ```
-        /// ```
-        /// REPRESENTATION:
-        ///     String: 0ujtsYcgvSTl8PAuAdqWYSMnLOv
-        ///      Raw: 0669F7EFB5A1CD34B5F99D1154FB6853345C9735
-        /// COMPONENTS:
-        ///     Time: 2017-10-09 21:00:47 -0700 PDT
-        ///     Timestamp: 107608047
-        ///     Payload: B5A1CD34B5F99D1154FB6853345C9735
-        /// ```
         pub fn get_formatted(&self) -> String {
             let mut formatted: String = String::new();
             for line in self.get_formatted_lines().iter() {
@@ -154,9 +142,6 @@ pub mod rksuid {
     ///
     /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
     /// println!("{}", ksuid.timestamp);
-    /// ```
-    /// ```
-    /// 107608047
     /// ```
     pub fn deserialize(text: &str) -> Ksuid {
         let unpadded = text.trim_start_matches("0");
@@ -187,13 +172,9 @@ pub mod rksuid {
     /// # Examples
     /// ```
     /// use rksuid::rksuid::gen_epoch;
-    /// let ksuid_epoch = rksuid::gen_epoch();
+    /// let ksuid_epoch = gen_epoch();
     /// println!("{:?}", ksuid_epoch);
     /// ```
-    /// ```
-    /// 2014-05-13T16:53:20Z
-    /// ```
-    ///
     pub fn gen_epoch() -> DateTime<Utc> {
         Utc.timestamp(1400000000, 0)
     }
@@ -203,11 +184,8 @@ pub mod rksuid {
     /// ```
     /// use rksuid::rksuid::to_std_epoch;
     ///
-    /// let some_day = rksuid::to_std_epoch(10);
+    /// let some_day = to_std_epoch(10);
     /// println!("{:?}", some_day);
-    /// ```
-    /// ```
-    /// 2014-05-13T16:53:30Z
     /// ```
     pub fn to_std_epoch(timestamp: u32) -> DateTime<Utc> {
         let base_epoch = gen_epoch();
