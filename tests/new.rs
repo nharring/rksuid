@@ -9,11 +9,6 @@ use rand::prelude::*;
 use std::{thread, time};
 
 
-#[test]
-fn new_with_timestamp() {
-    let ksuid = rksuid::new(Some(85), None);
-    assert_eq!(ksuid.timestamp, 85);
-}
 // Creation tests
 #[test]
 fn new() {
@@ -21,6 +16,11 @@ fn new() {
     thread::sleep(time::Duration::from_millis(2000));
     let second = rksuid::new(None, None);
     assert_ne!(first.timestamp, second.timestamp);
+}
+#[test]
+fn new_with_timestamp() {
+    let ksuid = rksuid::new(Some(85), None);
+    assert_eq!(ksuid.timestamp, 85);
 }
 #[test]
 fn new_with_payload() {
