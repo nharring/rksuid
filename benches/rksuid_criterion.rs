@@ -2,29 +2,47 @@
 extern crate criterion;
 extern crate rksuid;
 
-use criterion::Criterion;
+use criterion::*;
 
 use rand::prelude::thread_rng;
- use rand::seq::SliceRandom;
+use rand::seq::SliceRandom;
+use std::mem;
+use std::convert::TryInto;
 
 use rksuid::rksuid::{deserialize, Ksuid};
 
 pub fn bench_new_ksuid_creation(c: &mut Criterion) {
-    c.bench_function("New ksuid", |b| b.iter(|| rksuid::rksuid::new(None, None)));
+    let mut group = c.benchmark_group("new");
+    group.throughput(Throughput::Elements(1));
+    group.bench_function("New ksuid", |b| b.iter(|| rksuid::rksuid::new(None, None)));
+    group.finish();
 }
 pub fn bench_new_ksuid_fixed_timestamp(c: &mut Criterion) {
-    c.bench_function("New ksuid fixed timestamp", |b| b.iter(|| rksuid::rksuid::new(Some(168582232), None)));
+    let mut group = c.benchmark_group("new-with-timestamp");
+    group.throughput(Throughput::Elements(1));
+    group.bench_function("New ksuid fixed timestamp", |b| b.iter(|| rksuid::rksuid::new(Some(168582232), None)));
+    group.finish();
 }
 pub fn bench_new_ksuid_fixed_payload(c: &mut Criterion) {
-    c.bench_function("New ksuid fixed everything", |b| b.iter(|| rksuid::rksuid::new(None, Some(123456789))));
+    let mut group = c.benchmark_group("new-with-payload");
+    group.throughput(Throughput::Elements(1));
+    group.bench_function("New ksuid fixed payload", |b| b.iter(|| rksuid::rksuid::new(None, Some(123456789))));
+    group.finish();
 }
 pub fn bench_serialize(c: &mut Criterion) {
     let ksuid = rksuid::rksuid::new(None, None);
-    c.bench_function("Serialize", |b| b.iter(|| ksuid.serialize()));
+    let mut group = c.benchmark_group("serialize");
+    let example = "0ujtsYcgvSTl8PAuAdqWYSMnLOv";
+    group.throughput(Throughput::Bytes(example.len().try_into().unwrap()));
+    group.bench_function("Serialize", |b| b.iter(|| ksuid.serialize()));
+    group.finish();
 }
 pub fn bench_deserialize(c: &mut Criterion) {
     let serialized = "0ujtsYcgvSTl8PAuAdqWYSMnLOv";
-    c.bench_function("deserialize ", |b| b.iter(|| deserialize(&serialized)));
+    let mut group = c.benchmark_group("deserialize");
+    group.throughput(Throughput::Bytes(mem::size_of::<Ksuid>().try_into().unwrap()));
+    group.bench_function("deserialize ", |b| b.iter(|| deserialize(&serialized)));
+    group.finish();
 }
 
 fn build_ksuid_vec(n: i32) -> Vec<Ksuid> {
@@ -37,12 +55,24 @@ fn build_ksuid_vec(n: i32) -> Vec<Ksuid> {
 }
 
 pub fn bench_sort(c: &mut Criterion) {
-    let mut ksuids = build_ksuid_vec(500);
-    c.bench_function("sort 500", |b| b.iter(|| ksuids.sort()));
+    let element_count = vec![5,10,100,1000,5000,10000,50000,100000];
+    let mut group = c.benchmark_group("sort");
+    for n in element_count{
+        let mut ksuids = build_ksuid_vec(n);
+        group.throughput(Throughput::Elements(ksuids.len().try_into().unwrap()));
+        group.bench_function(BenchmarkId::from_parameter(n), |b| b.iter(|| ksuids.sort()));
+    }
+    group.finish();
 }
 pub fn bench_sort_unstable(c: &mut Criterion) {
-    let mut ksuids = build_ksuid_vec(500);
-    c.bench_function("sort_unstable 500", |b| b.iter(|| ksuids.sort_unstable()));
+    let element_count = vec![5,10,100,1000,5000,10000,50000,100000];
+    let mut group = c.benchmark_group("sort_unstable");
+    for n in element_count{
+        let mut ksuids = build_ksuid_vec(n);
+        group.throughput(Throughput::Elements(ksuids.len().try_into().unwrap()));
+        group.bench_function(BenchmarkId::from_parameter(n), |b| b.iter(|| ksuids.sort_unstable()));
+    }
+    group.finish();
 }
 
 criterion_group!(benches, bench_new_ksuid_creation, bench_new_ksuid_fixed_timestamp, bench_new_ksuid_fixed_payload, bench_serialize, bench_deserialize, bench_sort, bench_sort_unstable);

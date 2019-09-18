@@ -8,7 +8,10 @@ repository="https://github.com/nharring/rksuid"
 readme="README.md"
 license="MIT"
 keywords=["ksuid", "uuid"]
-maintenance= {status = "actively-developed"}
+maintenance={status = "actively-developed"}
+
+[badges]
+travis-ci = {repository="nharring/rksuid", branch="master"}
 
 [dependencies]
 base-encode = "0.3.0"
