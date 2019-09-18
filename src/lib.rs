@@ -2,6 +2,19 @@
 extern crate arrayref;
 
 pub mod rksuid {
+    //! Module for creating, representing and transforming K-Sortable UIDs as described by Segment.io
+    //!
+    //! # Examples
+    //! ```
+    //! use ::rksuid::rksuid;
+    //! use ::rksuid::rksuid::Ksuid;
+    //!
+    //! let ksuid: Ksuid = rksuid::new(None, None);
+    //!
+    //! let serialized: String = ksuid.serialize();
+    //!
+    //! let ksuid_2: Ksuid = rksuid::deserialize(&serialized);
+    //! ```
     use base_encode::{from_str, to_string};
     use rand::distributions::Standard;
     use rand::prelude::*;
@@ -56,12 +69,15 @@ pub mod rksuid {
         /// let ksuid = rksuid::new(Some(107608047), Some(0xB5A1CD34B5F99D1154FB6853345C9735));
         /// println!("{}", ksuid.serialize());
         /// ```
+        /// ```text
+        /// 0ujtsYcgvSTl8PAuAdqWYSMnLOv
+        /// ```
         pub fn serialize(&self) -> String {
             let mut merged_string: String;
             let all_bytes = self.get_bytes();
             merged_string = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
             if merged_string.char_indices().count() < 27 {
-                // We will zero pad the left side of the string to get it to the required 27
+                // Zero pad the left side of the string to get it to the required 27
                 let num_zeros = 27 - merged_string.char_indices().count();
                 let zero_str = String::from("0").repeat(num_zeros);
                 merged_string = zero_str + merged_string.as_str();
@@ -125,6 +141,15 @@ pub mod rksuid {
         /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
         /// println!("{}", ksuid.get_formatted());
         /// ```
+        /// ```text
+        /// REPRESENTATION:
+        ///     String: 0ujtsYcgvSTl8PAuAdqWYSMnLOv
+        ///      Raw: 0669F7EFB5A1CD34B5F99D1154FB6853345C9735
+        /// COMPONENTS:
+        ///     Time: 2017-10-09 21:00:47 -0700 PDT
+        ///     Timestamp: 107608047
+        ///     Payload: B5A1CD34B5F99D1154FB6853345C9735
+        /// ```
         pub fn get_formatted(&self) -> String {
             let mut formatted: String = String::new();
             for line in self.get_formatted_lines().iter() {
@@ -142,6 +167,9 @@ pub mod rksuid {
     ///
     /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
     /// println!("{}", ksuid.timestamp);
+    /// ```
+    /// ```text
+    /// 107608047
     /// ```
     pub fn deserialize(text: &str) -> Ksuid {
         let unpadded = text.trim_start_matches("0");
@@ -175,6 +203,10 @@ pub mod rksuid {
     /// let ksuid_epoch = gen_epoch();
     /// println!("{:?}", ksuid_epoch);
     /// ```
+    /// ```text
+    /// 2014-05-13T16:53:20Z
+    /// ```
+    ///
     pub fn gen_epoch() -> DateTime<Utc> {
         Utc.timestamp(1400000000, 0)
     }
@@ -186,6 +218,9 @@ pub mod rksuid {
     ///
     /// let some_day = to_std_epoch(10);
     /// println!("{:?}", some_day);
+    /// ```
+    /// ```text
+    /// 2014-05-13T16:53:30Z
     /// ```
     pub fn to_std_epoch(timestamp: u32) -> DateTime<Utc> {
         let base_epoch = gen_epoch();
