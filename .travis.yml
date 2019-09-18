@@ -4,19 +4,14 @@ rust:
   - stable
   - beta
   - nightly
+# unit and benchmark tests
+script:
+  - cargo test
+  - cargo bench
 matrix:
   allow_failures:
     rust:
       - nightly
-  exclude:
-    rust:
-      - nightly
-    script:
-      - cargo bench
   fast_finish: true
-# the main build
-script:
-  - cargo build
-  - cargo test
-  - cargo bench
+
 cache: cargo

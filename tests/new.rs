@@ -3,7 +3,6 @@ extern crate rksuid;
 #[cfg(test)]
 mod tests{
 use ::rksuid::rksuid;
-use ::rksuid::rksuid::Ksuid;
 use chrono::prelude::*;
 use rand::distributions::Standard;
 use rand::prelude::*;
