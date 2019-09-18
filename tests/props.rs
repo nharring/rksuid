@@ -5,9 +5,6 @@ mod tests {
     use ::rksuid::rksuid;
     use ::rksuid::rksuid::Ksuid;
     use chrono::prelude::*;
-    use rand::distributions::Standard;
-    use rand::prelude::*;
-    use std::{thread, time};
 
     // Test get_time
     #[test]

@@ -4,10 +4,6 @@ extern crate rksuid;
 mod tests {
     use ::rksuid::rksuid;
     use ::rksuid::rksuid::Ksuid;
-    use chrono::prelude::*;
-    use rand::distributions::Standard;
-    use rand::prelude::*;
-    use std::{thread, time};
 
     fn build_segment_ksuid() -> Ksuid {
         rksuid::new(Some(107608047), Some(0xB5A1CD34B5F99D1154FB6853345C9735))
