@@ -8,7 +8,7 @@ repository="https://github.com/nharring/rksuid"
 readme="README.md"
 license="MIT"
 keywords=["ksuid", "uuid"]
-maintenance={status = "actively-developed"}
+
 
 [badges]
 travis-ci = {repository="nharring/rksuid", branch="master"}

@@ -1,21 +1,39 @@
-sudo: false
 language: rust
+cache: cargo
 rust:
-- stable
-- beta
-- nightly
+  - stable
+  - beta
+  - nightly
 script:
-- cargo test
-- cargo bench
+  - cargo test
+
+before_install:
+  - curl -L https://github.com/mozilla/grcov/releases/latest/download/grcov-linux-x86_64.tar.bz2 | tar jxf -
+
+jobs:
+  include:
+  - stage: Benchmarking
+    script: cargo bench
+    rust: nightly
+  - stage: Coverage
+    script:
+      - export CARGO_INCREMENTAL=0
+      - export RUSTFLAGS="-Zprofile -Ccodegen-units=1 -Cinline-threshold=0 -Clink-dead-code -Coverflow-checks=off -Zno-landing-pads"
+      - cargo build --verbose $CARGO_OPTIONS
+      - cargo test --verbose $CARGO_OPTIONS
+      - |
+        zip -0 ccov.zip `find . \( -name "rksuid*.gc*" \) -print`;
+        ./grcov ccov.zip -s . -t lcov --llvm --branch --ignore-not-existing --ignore-dir "/*" -o lcov.info;
+        bash <(curl -s https://codecov.io/bash) -f lcov.info;
+    rust: nightly
+
 matrix:
   allow_failures:
-    rust:
-    - nightly
+    - rust: nightly
   fast_finish: true
-cache: cargo
 deploy:
-  token:
-    secure: ZTQkMMrGOOetVej1bAnKAEZKmbAnEvMTMiHHEX0fH84g1rmzoyFBIvoVO3+fbJ51X9f+JCbYrjGAhliKhDMPbqTLIuwzvuQhqBCcN55dKRJtpzuWMoikrPFnj3ERrJn6hQGPIgOAcWh3iwi+EVj56/rOMxU0KEwIhurubmTCDQly3n9tssKEcQAdVuGnZtGwM0x+h1WEdluYOyLGNDtMftcyTOsUwlxHW2lqS5yOK/epISnLCl7VsObTcSzdjnyWAqLJ/h12n3XdiqEgWzd8Yevy+7FDIQB7pF9ZVbWgVWo0w0u/uigNYkXMlTishQjx9DzTdGcA9/+nq1sPKS2c45CASwSKo8S4UWa5S/b8cRMO1ItfNspZW/9WY3aTcsAeRjfMm6nNlXD+yfaNIg/j4zQt/Cjt01IGg1Yk0yDDn2qB/7eXnlGy0iiBmQRbiH7eIi8jmolDqxa2JiRx7jogUDOwLORiYJWZx6/2gUtCt76PF8PVHxlusQ4TOYd7DicQyxYzgpr8/L7ehr6Zq+9JVe801NXZOMYAORiLZJIF08un3PoMhDRwZ6/uSl6fP1MuYCxRoeiaey3x0fRYNE5JSdOe54oTIuMt+2f8yftfC4uOynNXKqWsIpqdUbTjxbjVZ9A/Zp68HqkpSvSDitpf8aA65qKOTla5mk+B5ewfhD4=
   provider: cargo
+    token:
+      secure: ZTQkMMrGOOetVej1bAnKAEZKmbAnEvMTMiHHEX0fH84g1rmzoyFBIvoVO3+fbJ51X9f+JCbYrjGAhliKhDMPbqTLIuwzvuQhqBCcN55dKRJtpzuWMoikrPFnj3ERrJn6hQGPIgOAcWh3iwi+EVj56/rOMxU0KEwIhurubmTCDQly3n9tssKEcQAdVuGnZtGwM0x+h1WEdluYOyLGNDtMftcyTOsUwlxHW2lqS5yOK/epISnLCl7VsObTcSzdjnyWAqLJ/h12n3XdiqEgWzd8Yevy+7FDIQB7pF9ZVbWgVWo0w0u/uigNYkXMlTishQjx9DzTdGcA9/+nq1sPKS2c45CASwSKo8S4UWa5S/b8cRMO1ItfNspZW/9WY3aTcsAeRjfMm6nNlXD+yfaNIg/j4zQt/Cjt01IGg1Yk0yDDn2qB/7eXnlGy0iiBmQRbiH7eIi8jmolDqxa2JiRx7jogUDOwLORiYJWZx6/2gUtCt76PF8PVHxlusQ4TOYd7DicQyxYzgpr8/L7ehr6Zq+9JVe801NXZOMYAORiLZJIF08un3PoMhDRwZ6/uSl6fP1MuYCxRoeiaey3x0fRYNE5JSdOe54oTIuMt+2f8yftfC4uOynNXKqWsIpqdUbTjxbjVZ9A/Zp68HqkpSvSDitpf8aA65qKOTla5mk+B5ewfhD4=
   on:
     branch: production
