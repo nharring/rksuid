@@ -12,6 +12,8 @@ keywords=["ksuid", "uuid"]
 
 [badges]
 travis-ci = {repository="nharring/rksuid", branch="master"}
+codecov = { repository = "nharring/rksuid", branch = "master", service = "github" }
+maintenance = {status="actively-developed"}
 
 [dependencies]
 base-encode = "0.3.0"
