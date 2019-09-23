@@ -1,0 +1,1 @@
+{"group_id":"gen_payloads","function_id":"Rng","value_str":"XORSHIFT","throughput":{"Elements":1},"full_id":"gen_payloads/Rng/XORSHIFT","directory_name":"gen_payloads/rng/xorshift","title":"gen_payloads/Rng/XORSHIFT"}
