@@ -8,3 +8,7 @@ Segment [published](https://segment.com/blog/a-brief-history-of-the-uuid/) a nif
 
 # Documentation
 https://docs.rs/rksuid/
+
+# Benchmarks
+https://nharring.github.io/rksuid/criterion/report/index.html
+https://nharring.github.io/rksuid/criterion/gen_payloads/rng_/report/index.html
