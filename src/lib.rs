@@ -233,8 +233,8 @@ pub mod rksuid {
             Some(rng) if rng == RngType::XOSHIRO256STARSTAR => return gen_payload_xoshiro256starstar(),
             Some(rng) if rng == RngType::XORSHIFT => return gen_payload_xorshift(),
             Some(rng) if rng == RngType::SFMT => return gen_payload_sfmt(),
-            Some(_) => return gen_payload_chacha8(),
-            None => return gen_payload_chacha8(),
+            Some(_) => return gen_payload_pcg64_fast(),
+            None => return gen_payload_pcg64_fast(),
         }
     }
 
