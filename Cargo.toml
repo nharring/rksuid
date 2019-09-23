@@ -1,6 +1,6 @@
 [package]
 name = "rksuid"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["nharring@gmail.com"]
 edition = "2018"
 description="Rust implementation of the Segment.io KSUID format"
@@ -18,9 +18,15 @@ maintenance = {status="actively-developed"}
 [dependencies]
 base-encode = "0.3.0"
 rand = "0.7.0"
+rand_core = "0.5.1"
 chrono = "0.4"
 time = "0.1"
 arrayref = "0.3.5"
+rand_chacha = "0.2.1"
+hyper-thread-random = "0.4.2"
+wyhash = "0.3.0"
+strum = "0.16.0"
+strum_macros = "0.16.0"
 
 [dev-dependencies]
 criterion = "0.3"

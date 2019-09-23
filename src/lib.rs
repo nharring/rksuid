@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate arrayref;
-
+extern crate rand;
+extern crate strum;
+extern crate strum_macros;
 pub mod rksuid {
     //! Module for creating, representing and transforming K-Sortable UIDs as described by Segment.io
     //!
@@ -16,11 +18,17 @@ pub mod rksuid {
     //! let ksuid_2: Ksuid = rksuid::deserialize(&serialized);
     //! ```
     use base_encode::{from_str, to_string};
-    use rand::distributions::Standard;
-    use rand::prelude::*;
     extern crate time;
     use chrono::prelude::*;
     use time::Duration;
+    use wyhash::wyrng;
+    use rand::prelude::*;
+    use rand::distributions::Standard;
+    use hyper_thread_random::generate_hyper_thread_safe_random_u64;
+    use rand_chacha::ChaCha8Rng;
+    use rand_chacha::ChaCha12Rng;
+    use strum_macros::{Display, EnumIter};
+
 
     /// Base62 Alphabet which preserves lexigraphic sorting
     pub const ALPHABET: &[u8; 62] =
@@ -33,6 +41,16 @@ pub mod rksuid {
         pub timestamp: u32,
         /// 128 bits of payload, usually a rand\<u128\>
         pub payload: u128,
+    }
+
+    /// RNG Types supported for payload creation, ChaCha8 is the default
+    #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Display, EnumIter)]
+    pub enum RngType{
+        CORE,
+        CHACHA8,
+        CHACHA12,
+        HYPERTHREAD,
+        WYRNG,
     }
 
     /// Creates new Ksuid with optionally specified timestamp and payload
@@ -50,7 +68,7 @@ pub mod rksuid {
             Some(i) => i,
         };
         let internal_payload = match payload {
-            None => gen_payload(),
+            None => gen_payload(None),
             Some(i) => i,
         };
         Ksuid {
@@ -185,15 +203,51 @@ pub mod rksuid {
             panic!();
         }
     }
-
-    // Returns a fresh random u128 for use as payload
-    fn gen_payload() -> u128 {
-        let payload: u128 = StdRng::from_entropy().sample(Standard);
-        return payload;
-    }
     // Returns now as u32 seconds since the unix epoch + 14e8 (May 13, 2014)
     fn gen_timestamp() -> u32 {
         Utc::now().signed_duration_since(gen_epoch()).num_seconds() as u32
+    }
+
+    /// Returns a pseudo-random u128 for use as payload of a new Ksuid
+    /// Optionally accepts an RngType instead of default ChaCha8
+    pub fn gen_payload(rng: Option<RngType>) -> u128 {
+        match rng {
+            Some(rng) if rng == RngType::CORE => return gen_payload_core(),
+            Some(rng) if rng == RngType::CHACHA8 => return gen_payload_chacha8(),
+            Some(rng) if rng == RngType::CHACHA12 => return gen_payload_chacha12(),
+            Some(rng) if rng == RngType::HYPERTHREAD => return gen_payload_hyperthread(),
+            Some(rng) if rng == RngType::WYRNG => return gen_payload_wyrng(),
+            Some(_) => return gen_payload_chacha8(),
+            None => return gen_payload_chacha8(),
+        }
+    }
+
+    // Returns a fresh random u128 for use as payload
+    fn gen_payload_core() -> u128 {
+        let payload: u128 = StdRng::from_entropy().sample(Standard);
+        return payload;
+    }
+    // Some additional payload generators for benchmarking
+    fn gen_payload_chacha8() -> u128 {
+        let payload: u128 = ChaCha8Rng::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_chacha12() -> u128 {
+        let payload: u128 = ChaCha12Rng::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_hyperthread() -> u128 {
+        let first = generate_hyper_thread_safe_random_u64();
+        let second = generate_hyper_thread_safe_random_u64();
+        let byte_vec: Vec<u8> = first.to_le_bytes().to_vec().into_iter().chain(second.to_le_bytes().to_vec().into_iter()).collect();
+        u128::from_ne_bytes(*array_ref![byte_vec, 0, 16])
+    }
+    fn gen_payload_wyrng() -> u128 {
+        let mut seed = 8675309;
+        let first = wyrng(&mut seed);
+        let second = wyrng(&mut seed);
+        let byte_vec: Vec<u8> = first.to_le_bytes().to_vec().into_iter().chain(second.to_le_bytes().to_vec().into_iter()).collect();
+        u128::from_ne_bytes(*array_ref![byte_vec, 0, 16])
     }
 
     /// Returns a Chrono::DateTime<Utc> representing the adjusted epoch

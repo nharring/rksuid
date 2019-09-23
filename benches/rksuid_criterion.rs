@@ -1,6 +1,8 @@
 #[macro_use]
 extern crate criterion;
 extern crate rksuid;
+extern crate strum;
+extern crate strum_macros;
 
 use criterion::*;
 
@@ -9,7 +11,9 @@ use rand::seq::SliceRandom;
 use std::mem;
 use std::convert::TryInto;
 
-use rksuid::rksuid::{deserialize, Ksuid};
+use rksuid::rksuid::{deserialize, Ksuid, RngType};
+use strum::IntoEnumIterator;
+
 
 pub fn bench_new_ksuid_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("new");
@@ -65,5 +69,17 @@ pub fn bench_sort_unstable(c: &mut Criterion) {
     group.finish();
 }
 
-criterion_group!(benches, bench_new_ksuid_creation, bench_serialize, bench_deserialize, bench_sort, bench_sort_unstable);
-criterion_main!(benches);
+pub fn bench_payload(c: &mut Criterion) {
+    let mut group = c.benchmark_group("gen_payloads");
+    group.throughput(Throughput::Elements(1));
+    for e in rksuid::rksuid::RngType::iter() {
+        group.bench_with_input(BenchmarkId::new("Rng", e), &e, |b, e| b.iter(|| rksuid::rksuid::gen_payload(Some(*e))));
+    }
+    group.finish();
+}
+
+criterion_group!(creation, bench_new_ksuid_creation);
+criterion_group!(serde, bench_serialize, bench_deserialize);
+criterion_group!(sorting, bench_sort, bench_sort_unstable);
+criterion_group!(payload, bench_payload);
+criterion_main!(creation, serde, sorting, payload);
