@@ -26,10 +26,12 @@ pub mod rksuid {
     use rand_hc::Hc128Rng;
     use rand_pcg::Pcg64Mcg;
     use rand_xoshiro::{Xoshiro256StarStar, Xoshiro256PlusPlus};
+    use rand_xorshift::XorShiftRng;
     use hyper_thread_random::generate_hyper_thread_safe_random_u64;
     use rand_chacha::ChaCha8Rng;
     use rand_chacha::ChaCha12Rng;
     use strum_macros::{Display, EnumIter};
+    use sfmt::SFMT;
 
 
     /// Base62 Alphabet which preserves lexigraphic sorting
@@ -57,6 +59,8 @@ pub mod rksuid {
         HC128,
         XOSHIRO256PLUSPLUS,
         XOSHIRO256STARSTAR,
+        XORSHIFT,
+        SFMT,
     }
 
     /// Creates new Ksuid with optionally specified timestamp and payload
@@ -227,6 +231,8 @@ pub mod rksuid {
             Some(rng) if rng == RngType::HC128 => return gen_payload_hc128(),
             Some(rng) if rng == RngType::XOSHIRO256PLUSPLUS => return gen_payload_xoshiro256plusplus(),
             Some(rng) if rng == RngType::XOSHIRO256STARSTAR => return gen_payload_xoshiro256starstar(),
+            Some(rng) if rng == RngType::XORSHIFT => return gen_payload_xorshift(),
+            Some(rng) if rng == RngType::SFMT => return gen_payload_sfmt(),
             Some(_) => return gen_payload_chacha8(),
             None => return gen_payload_chacha8(),
         }
@@ -261,6 +267,14 @@ pub mod rksuid {
     }
     fn gen_payload_xoshiro256starstar() -> u128 {
         let payload: u128 = Xoshiro256StarStar::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_xorshift() -> u128 {
+        let payload: u128 = XorShiftRng::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_sfmt() -> u128 {
+        let payload: u128 = SFMT::from_entropy().sample(Standard);
         return payload;
     }
     // Some more esoteric generators

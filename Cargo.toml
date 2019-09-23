@@ -26,10 +26,12 @@ rand_chacha = "0.2.1"
 rand_pcg = "0.2.0"
 rand_hc = "0.2.0"
 rand_xoshiro = "0.4.0"
+rand_xorshift = "0.2.0"
 hyper-thread-random = "0.4.2"
 wyhash = "0.3.0"
 strum = "0.16.0"
 strum_macros = "0.16.0"
+sfmt = "0.6.0"
 
 [dev-dependencies]
 criterion = "0.3"
