@@ -3,7 +3,7 @@
 
 <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-    <title>sort/100000 - Criterion.rs</title>
+    <title>sort/100000 Summary - Criterion.rs</title>
     <style type="text/css">
         body {
             font: 14px Helvetica Neue;
@@ -15,41 +15,9 @@
             margin: auto;
         }
 
-        th {
-            font-weight: 200
-        }
-
-        th,
-        td {
-            padding-right: 3px;
-            padding-bottom: 3px;
-        }
-
         a:link {
             color: #1F78B4;
             text-decoration: none;
-        }
-
-        th.ci-bound {
-            opacity: 0.6
-        }
-
-        td.ci-bound {
-            opacity: 0.5
-        }
-
-        .stats {
-            width: 80%;
-            margin: auto;
-            display: flex;
-        }
-
-        .additional_stats {
-            flex: 0 0 60%
-        }
-
-        .additional_plots {
-            flex: 1
         }
 
         h2 {
@@ -84,117 +52,59 @@
 <body>
     <div class="body">
         <h2>sort/100000</h2>
-        <div class="absolute">
-            <section class="plots">
-                <table width="100%">
-                    <tbody>
-                        <tr>
-                            <td>
-                                <a href="pdf.svg">
-                                    <img src="pdf_small.svg" alt="PDF of Slope" width="450" height="300" />
-                                </a>
-                            </td>
-                            <td>
-                                <a href="regression.svg">
-                                    <img src="regression_small.svg" alt="Regression" width="450" height="300" />
-                                </a>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </section>
-            <section class="stats">
-                <div class="additional_stats">
-                    <h4>Additional Statistics:</h4>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th></th>
-                                <th title="0.95 confidence level" class="ci-bound">Lower bound</th>
-                                <th>Estimate</th>
-                                <th title="0.95 confidence level" class="ci-bound">Upper bound</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>Slope</td>
-                                <td class="ci-bound">99.541 us</td>
-                                <td>99.957 us</td>
-                                <td class="ci-bound">100.50 us</td>
-                            </tr>
-                            <tr>
-                                <td>Throughput</td>
-                                <td class="ci-bound">995.05 Melem/s</td>
-                                <td>1.0004 Gelem/s</td>
-                                <td class="ci-bound">1.0046 Gelem/s</td>
-                            </tr>
-                            <tr>
-                                <td>R&#xb2;</td>
-                                <td class="ci-bound">0.9602784</td>
-                                <td>0.9623610</td>
-                                <td class="ci-bound">0.9588535</td>
-                            </tr>
-                            <tr>
-                                <td>Mean</td>
-                                <td class="ci-bound">99.648 us</td>
-                                <td>99.871 us</td>
-                                <td class="ci-bound">100.16 us</td>
-                            </tr>
-                            <tr>
-                                <td title="Standard Deviation">Std. Dev.</td>
-                                <td class="ci-bound">673.81 ns</td>
-                                <td>1.3187 us</td>
-                                <td class="ci-bound">1.9990 us</td>
-                            </tr>
-                            <tr>
-                                <td>Median</td>
-                                <td class="ci-bound">99.715 us</td>
-                                <td>99.803 us</td>
-                                <td class="ci-bound">99.870 us</td>
-                            </tr>
-                            <tr>
-                                <td title="Median Absolute Deviation">MAD</td>
-                                <td class="ci-bound">320.06 ns</td>
-                                <td>404.89 ns</td>
-                                <td class="ci-bound">558.13 ns</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-                <div class="additional_plots">
-                    <h4>Additional Plots:</h4>
-                    <ul>
-                        
-                        <li>
-                            <a href="slope.svg">Slope</a>
-                        </li>
-                        <li>
-                            <a href="mean.svg">Mean</a>
-                        </li>
-                        <li>
-                            <a href="SD.svg">Std. Dev.</a>
-                        </li>
-                        <li>
-                            <a href="median.svg">Median</a>
-                        </li>
-                        <li>
-                            <a href="MAD.svg">MAD</a>
-                        </li>
-                    </ul>
-                </div>
-            </section>
-            <section class="explanation">
-                <h4>Understanding this report:</h4>
-                <p>The plot on the left displays the average time per iteration for this benchmark. The shaded region
-                    shows the estimated probabilty of an iteration taking a certain amount of time, while the line
-                    shows the mean. Click on the plot for a larger view showing the outliers.</p>
-                <p>The plot on the right shows the linear regression calculated from the measurements. Each point
-                    represents a sample, though here it shows the total time for the sample rather than time per
-                    iteration. The line is the line of best fit for these measurements.</p>
-                <p>See <a href="https://bheisler.github.io/criterion.rs/book/user_guide/command_line_output.html#additional-statistics">the
-                        documentation</a> for more details on the additional statistics.</p>
-            </section>
-        </div>
+        <h3>Violin Plot</h3>
+        <a href="violin.svg">
+            <img src="violin.svg" alt="Violin Plot" />
+        </a>
+        <p>This chart shows the relationship between function/parameter and iteration time. The thickness of the shaded
+            region indicates the probability that a measurement of the given function/parameter would take a particular
+            length of time.</p>
+        <section class="plots">
+            <a href="../../../sort/unstable/100000/report/index.html">
+                <h4>sort/Unstable/100000</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../sort/unstable/100000/report/pdf.svg">
+                                <img src="../../../sort/unstable/100000/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../sort/unstable/100000/report/regression.svg">
+                                <img src="../../../sort/unstable/100000/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
+        <section class="plots">
+            <a href="../../../sort/sort/100000/report/index.html">
+                <h4>sort/Sort/100000</h4>
+            </a>
+            <table width="100%">
+                <tbody>
+                    <tr>
+                        <td>
+                            <a href="../../../sort/sort/100000/report/pdf.svg">
+                                <img src="../../../sort/sort/100000/report/pdf_small.svg" alt="PDF of Slope" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                        <td>
+                            <a href="../../../sort/sort/100000/report/regression.svg">
+                                <img src="../../../sort/sort/100000/report/regression_small.svg" alt="Regression" width="450"
+                                    height="300" />
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </section>
     </div>
     <div id="footer">
         <p>This report was generated by
