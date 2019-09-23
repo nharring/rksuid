@@ -1,6 +1,5 @@
 #[macro_use]
 extern crate arrayref;
-extern crate rand;
 extern crate strum;
 extern crate strum_macros;
 pub mod rksuid {
@@ -24,6 +23,9 @@ pub mod rksuid {
     use wyhash::wyrng;
     use rand::prelude::*;
     use rand::distributions::Standard;
+    use rand_hc::Hc128Rng;
+    use rand_pcg::Pcg64Mcg;
+    use rand_xoshiro::{Xoshiro256StarStar, Xoshiro256PlusPlus};
     use hyper_thread_random::generate_hyper_thread_safe_random_u64;
     use rand_chacha::ChaCha8Rng;
     use rand_chacha::ChaCha12Rng;
@@ -51,6 +53,10 @@ pub mod rksuid {
         CHACHA12,
         HYPERTHREAD,
         WYRNG,
+        PCG64FAST,
+        HC128,
+        XOSHIRO256PLUSPLUS,
+        XOSHIRO256STARSTAR,
     }
 
     /// Creates new Ksuid with optionally specified timestamp and payload
@@ -217,6 +223,10 @@ pub mod rksuid {
             Some(rng) if rng == RngType::CHACHA12 => return gen_payload_chacha12(),
             Some(rng) if rng == RngType::HYPERTHREAD => return gen_payload_hyperthread(),
             Some(rng) if rng == RngType::WYRNG => return gen_payload_wyrng(),
+            Some(rng) if rng == RngType::PCG64FAST => return gen_payload_pcg64_fast(),
+            Some(rng) if rng == RngType::HC128 => return gen_payload_hc128(),
+            Some(rng) if rng == RngType::XOSHIRO256PLUSPLUS => return gen_payload_xoshiro256plusplus(),
+            Some(rng) if rng == RngType::XOSHIRO256STARSTAR => return gen_payload_xoshiro256starstar(),
             Some(_) => return gen_payload_chacha8(),
             None => return gen_payload_chacha8(),
         }
@@ -228,6 +238,7 @@ pub mod rksuid {
         return payload;
     }
     // Some additional payload generators for benchmarking
+    // Some from the rand crate family
     fn gen_payload_chacha8() -> u128 {
         let payload: u128 = ChaCha8Rng::from_entropy().sample(Standard);
         return payload;
@@ -236,6 +247,23 @@ pub mod rksuid {
         let payload: u128 = ChaCha12Rng::from_entropy().sample(Standard);
         return payload;
     }
+    fn gen_payload_pcg64_fast() -> u128 {
+        let payload: u128 = Pcg64Mcg::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_hc128() -> u128 {
+        let payload: u128 = Hc128Rng::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_xoshiro256plusplus() -> u128 {
+        let payload: u128 = Xoshiro256PlusPlus::from_entropy().sample(Standard);
+        return payload;
+    }
+    fn gen_payload_xoshiro256starstar() -> u128 {
+        let payload: u128 = Xoshiro256StarStar::from_entropy().sample(Standard);
+        return payload;
+    }
+    // Some more esoteric generators
     fn gen_payload_hyperthread() -> u128 {
         let first = generate_hyper_thread_safe_random_u64();
         let second = generate_hyper_thread_safe_random_u64();
@@ -249,6 +277,7 @@ pub mod rksuid {
         let byte_vec: Vec<u8> = first.to_le_bytes().to_vec().into_iter().chain(second.to_le_bytes().to_vec().into_iter()).collect();
         u128::from_ne_bytes(*array_ref![byte_vec, 0, 16])
     }
+
 
     /// Returns a Chrono::DateTime<Utc> representing the adjusted epoch
     /// # Examples
