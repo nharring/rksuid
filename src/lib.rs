@@ -4,18 +4,7 @@ extern crate strum;
 extern crate strum_macros;
 pub mod rksuid {
     //! Module for creating, representing and transforming K-Sortable UIDs as described by Segment.io
-    //!
-    //! # Examples
-    //! ```
-    //! use ::rksuid::rksuid;
-    //! use ::rksuid::rksuid::Ksuid;
-    //!
-    //! let ksuid: Ksuid = rksuid::new(None, None);
-    //!
-    //! let serialized: String = ksuid.serialize();
-    //!
-    //! let ksuid_2: Ksuid = rksuid::deserialize(&serialized);
-    //! ```
+
     use base_encode::{from_str, to_string};
     extern crate time;
     use chrono::prelude::*;
@@ -38,6 +27,15 @@ pub mod rksuid {
     pub const ALPHABET: &[u8; 62] =
         b"0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz";
 
+    ///  # Examples
+    ///  ```
+    ///  use ::rksuid::rksuid;
+    ///  use ::rksuid::rksuid::Ksuid;
+    ///  let ksuid: Ksuid = rksuid::new(None, None);
+    ///  let serialized: String = ksuid.serialize();
+    ///  let ksuid_2: Ksuid = rksuid::deserialize(&serialized);
+    ///  assert_eq!(ksuid, ksuid_2);
+    ///  ```
     /// K-Sortable Unique ID
     #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq)]
     pub struct Ksuid {
@@ -66,7 +64,6 @@ pub mod rksuid {
     /// Creates new Ksuid with optionally specified timestamp and payload
     ///
     /// # Examples
-    ///
     /// ```
     /// use ::rksuid::rksuid;
     ///
@@ -90,12 +87,13 @@ pub mod rksuid {
     impl Ksuid {
         /// Serialize ksuid into base62 encoded string 27 characters long
         /// # Examples
-        ///
         /// ```
         /// use ::rksuid::rksuid;
         ///
         /// let ksuid = rksuid::new(Some(107608047), Some(0xB5A1CD34B5F99D1154FB6853345C9735));
-        /// println!("{}", ksuid.serialize());
+        /// let serialized = ksuid.serialize();
+        /// assert_eq!(serialized, "0ujtsYcgvSTl8PAuAdqWYSMnLOv");
+        ///
         /// ```
         /// ```text
         /// 0ujtsYcgvSTl8PAuAdqWYSMnLOv
@@ -167,7 +165,10 @@ pub mod rksuid {
         /// use ::rksuid::rksuid;
         ///
         /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
-        /// println!("{}", ksuid.get_formatted());
+        /// let formatted = ksuid.get_formatted();  // This binding is necessary for lifetime purposes
+        /// let lines: Vec<&str> = formatted.lines().collect();
+        /// assert_eq!(lines[5], "\tTimestamp: 107608047");
+        ///
         /// ```
         /// ```text
         /// REPRESENTATION:
@@ -195,6 +196,7 @@ pub mod rksuid {
     ///
     /// let ksuid = rksuid::deserialize("0ujtsYcgvSTl8PAuAdqWYSMnLOv");
     /// println!("{}", ksuid.timestamp);
+    /// assert_eq!(ksuid.timestamp, 107608047);
     /// ```
     /// ```text
     /// 107608047
