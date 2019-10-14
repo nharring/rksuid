@@ -234,8 +234,8 @@ pub mod rksuid {
             Some(rng) if rng == RngType::XORSHIFT => gen_payload_xorshift(),
             Some(rng) if rng == RngType::SFMT => gen_payload_sfmt(),
             Some(_) => gen_payload_pcg64_fast(),
-            // None => return gen_payload_pcg64_fast(),
-            None => gen_payload_core(),
+            None => gen_payload_pcg64_fast(),
+            // None => gen_payload_core(),
         }
     }
 
