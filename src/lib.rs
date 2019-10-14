@@ -108,7 +108,7 @@ pub mod rksuid {
                 let zero_str = String::from("0").repeat(num_zeros);
                 merged_string = zero_str + merged_string.as_str();
             }
-            return merged_string;
+            merged_string
         }
 
         /// Return timestamp of Ksuid as DateTime<Utc>
@@ -124,14 +124,13 @@ pub mod rksuid {
 
         /// Get Vec<u8> of all 20 bytes of the Ksuid
         fn get_bytes(&self) -> Vec<u8> {
-            let all_bytes = self
+            self
                 .timestamp
                 .to_be_bytes()
                 .to_vec()
                 .into_iter()
                 .chain(self.payload.to_be_bytes().to_vec().into_iter())
-                .collect();
-            return all_bytes;
+                .collect()
         }
 
         /// Get Vec<String> of lines in formatted output
@@ -155,7 +154,7 @@ pub mod rksuid {
                 format!("\tTimestamp: {}", self.timestamp),
                 format!("\tPayload: {}", self.get_payload()),
             ];
-            return output;
+            output
         }
 
         /// Get 7 line formatted string with representation and components of Ksuid
@@ -185,7 +184,7 @@ pub mod rksuid {
                 formatted.push_str(&line);
                 formatted.push_str("\n");
             }
-            return formatted;
+            formatted
         }
     }
 
@@ -202,15 +201,14 @@ pub mod rksuid {
     /// 107608047
     /// ```
     pub fn deserialize(text: &str) -> Ksuid {
-        let unpadded = text.trim_start_matches("0");
+        let unpadded = text.trim_start_matches('0');
         let bytes_from_str_be_parsed = from_str(unpadded, 62, ALPHABET);
         if let Some(bytes_from_str_be) = bytes_from_str_be_parsed {
             let timestamp_bytes: &[u8; 4] = array_ref![bytes_from_str_be, 0, 4];
             let payload_bytes: &[u8; 16] = array_ref![bytes_from_str_be, 4, 16];
             let timestamp: u32 = u32::from_be_bytes(*timestamp_bytes);
             let payload: u128 = u128::from_be_bytes(*payload_bytes);
-            let ksuid = new(Some(timestamp), Some(payload));
-            return ksuid;
+            new(Some(timestamp), Some(payload))
         } else {
             panic!();
         }
@@ -224,60 +222,61 @@ pub mod rksuid {
     /// Optionally accepts an RngType instead of default ChaCha8
     pub fn gen_payload(rng: Option<RngType>) -> u128 {
         match rng {
-            Some(rng) if rng == RngType::CORE => return gen_payload_core(),
-            Some(rng) if rng == RngType::CHACHA8 => return gen_payload_chacha8(),
-            Some(rng) if rng == RngType::CHACHA12 => return gen_payload_chacha12(),
-            Some(rng) if rng == RngType::HYPERTHREAD => return gen_payload_hyperthread(),
-            Some(rng) if rng == RngType::WYRNG => return gen_payload_wyrng(),
-            Some(rng) if rng == RngType::PCG64FAST => return gen_payload_pcg64_fast(),
-            Some(rng) if rng == RngType::HC128 => return gen_payload_hc128(),
-            Some(rng) if rng == RngType::XOSHIRO256PLUSPLUS => return gen_payload_xoshiro256plusplus(),
-            Some(rng) if rng == RngType::XOSHIRO256STARSTAR => return gen_payload_xoshiro256starstar(),
-            Some(rng) if rng == RngType::XORSHIFT => return gen_payload_xorshift(),
-            Some(rng) if rng == RngType::SFMT => return gen_payload_sfmt(),
-            Some(_) => return gen_payload_pcg64_fast(),
-            None => return gen_payload_pcg64_fast(),
+            Some(rng) if rng == RngType::CORE => gen_payload_core(),
+            Some(rng) if rng == RngType::CHACHA8 => gen_payload_chacha8(),
+            Some(rng) if rng == RngType::CHACHA12 => gen_payload_chacha12(),
+            Some(rng) if rng == RngType::HYPERTHREAD => gen_payload_hyperthread(),
+            Some(rng) if rng == RngType::WYRNG => gen_payload_wyrng(),
+            Some(rng) if rng == RngType::PCG64FAST => gen_payload_pcg64_fast(),
+            Some(rng) if rng == RngType::HC128 => gen_payload_hc128(),
+            Some(rng) if rng == RngType::XOSHIRO256PLUSPLUS => gen_payload_xoshiro256plusplus(),
+            Some(rng) if rng == RngType::XOSHIRO256STARSTAR => gen_payload_xoshiro256starstar(),
+            Some(rng) if rng == RngType::XORSHIFT => gen_payload_xorshift(),
+            Some(rng) if rng == RngType::SFMT => gen_payload_sfmt(),
+            Some(_) => gen_payload_pcg64_fast(),
+            // None => return gen_payload_pcg64_fast(),
+            None => gen_payload_core(),
         }
     }
 
     // Returns a fresh random u128 for use as payload
     fn gen_payload_core() -> u128 {
         let payload: u128 = StdRng::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     // Some additional payload generators for benchmarking
     // Some from the rand crate family
     fn gen_payload_chacha8() -> u128 {
         let payload: u128 = ChaCha8Rng::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_chacha12() -> u128 {
         let payload: u128 = ChaCha12Rng::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_pcg64_fast() -> u128 {
         let payload: u128 = Pcg64Mcg::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_hc128() -> u128 {
         let payload: u128 = Hc128Rng::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_xoshiro256plusplus() -> u128 {
         let payload: u128 = Xoshiro256PlusPlus::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_xoshiro256starstar() -> u128 {
         let payload: u128 = Xoshiro256StarStar::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_xorshift() -> u128 {
         let payload: u128 = XorShiftRng::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     fn gen_payload_sfmt() -> u128 {
         let payload: u128 = SFMT::from_entropy().sample(Standard);
-        return payload;
+        payload
     }
     // Some more esoteric generators
     fn gen_payload_hyperthread() -> u128 {
@@ -287,7 +286,7 @@ pub mod rksuid {
         u128::from_ne_bytes(*array_ref![byte_vec, 0, 16])
     }
     fn gen_payload_wyrng() -> u128 {
-        let mut seed = 8675309;
+        let mut seed = 8_675_309;
         let first = wyrng(&mut seed);
         let second = wyrng(&mut seed);
         let byte_vec: Vec<u8> = first.to_le_bytes().to_vec().into_iter().chain(second.to_le_bytes().to_vec().into_iter()).collect();
@@ -307,7 +306,7 @@ pub mod rksuid {
     /// ```
     ///
     pub fn gen_epoch() -> DateTime<Utc> {
-        Utc.timestamp(1400000000, 0)
+        Utc.timestamp(1_400_000_000, 0)
     }
 
     /// Convert a u32 timestamp from a Ksuid.timestamp into DateTime<Utc>
