@@ -9,18 +9,10 @@ pub mod rksuid {
     extern crate time;
     use chrono::prelude::*;
     use time::Duration;
-    use wyhash::wyrng;
     use rand::prelude::*;
     use rand::distributions::Standard;
-    use rand_hc::Hc128Rng;
     use rand_pcg::Pcg64Mcg;
-    use rand_xoshiro::{Xoshiro256StarStar, Xoshiro256PlusPlus};
-    use rand_xorshift::XorShiftRng;
-    use hyper_thread_random::generate_hyper_thread_safe_random_u64;
-    use rand_chacha::ChaCha8Rng;
-    use rand_chacha::ChaCha12Rng;
     use strum_macros::{Display, EnumIter};
-    use sfmt::SFMT;
 
 
     /// Base62 Alphabet which preserves lexigraphic sorting
@@ -45,20 +37,10 @@ pub mod rksuid {
         pub payload: u128,
     }
 
-    /// RNG Types supported for payload creation, ChaCha8 is the default
+    /// RNG Types supported for payload creation
     #[derive(Debug, PartialOrd, Ord, Clone, Copy, PartialEq, Eq, Display, EnumIter)]
     pub enum RngType{
-        CORE,
-        CHACHA8,
-        CHACHA12,
-        HYPERTHREAD,
-        WYRNG,
         PCG64FAST,
-        HC128,
-        XOSHIRO256PLUSPLUS,
-        XOSHIRO256STARSTAR,
-        XORSHIFT,
-        SFMT,
     }
 
     /// Creates new Ksuid with optionally specified timestamp and payload
@@ -222,77 +204,17 @@ pub mod rksuid {
     /// Optionally accepts an RngType instead of default ChaCha8
     pub fn gen_payload(rng: Option<RngType>) -> u128 {
         match rng {
-            Some(rng) if rng == RngType::CORE => gen_payload_core(),
-            Some(rng) if rng == RngType::CHACHA8 => gen_payload_chacha8(),
-            Some(rng) if rng == RngType::CHACHA12 => gen_payload_chacha12(),
-            Some(rng) if rng == RngType::HYPERTHREAD => gen_payload_hyperthread(),
-            Some(rng) if rng == RngType::WYRNG => gen_payload_wyrng(),
-            Some(rng) if rng == RngType::PCG64FAST => gen_payload_pcg64_fast(),
-            Some(rng) if rng == RngType::HC128 => gen_payload_hc128(),
-            Some(rng) if rng == RngType::XOSHIRO256PLUSPLUS => gen_payload_xoshiro256plusplus(),
-            Some(rng) if rng == RngType::XOSHIRO256STARSTAR => gen_payload_xoshiro256starstar(),
-            Some(rng) if rng == RngType::XORSHIFT => gen_payload_xorshift(),
-            Some(rng) if rng == RngType::SFMT => gen_payload_sfmt(),
             Some(_) => gen_payload_pcg64_fast(),
             None => gen_payload_pcg64_fast(),
-            // None => gen_payload_core(),
+
         }
     }
 
     // Returns a fresh random u128 for use as payload
-    fn gen_payload_core() -> u128 {
-        let payload: u128 = StdRng::from_entropy().sample(Standard);
-        payload
-    }
-    // Some additional payload generators for benchmarking
-    // Some from the rand crate family
-    fn gen_payload_chacha8() -> u128 {
-        let payload: u128 = ChaCha8Rng::from_entropy().sample(Standard);
-        payload
-    }
-    fn gen_payload_chacha12() -> u128 {
-        let payload: u128 = ChaCha12Rng::from_entropy().sample(Standard);
-        payload
-    }
     fn gen_payload_pcg64_fast() -> u128 {
         let payload: u128 = Pcg64Mcg::from_entropy().sample(Standard);
         payload
     }
-    fn gen_payload_hc128() -> u128 {
-        let payload: u128 = Hc128Rng::from_entropy().sample(Standard);
-        payload
-    }
-    fn gen_payload_xoshiro256plusplus() -> u128 {
-        let payload: u128 = Xoshiro256PlusPlus::from_entropy().sample(Standard);
-        payload
-    }
-    fn gen_payload_xoshiro256starstar() -> u128 {
-        let payload: u128 = Xoshiro256StarStar::from_entropy().sample(Standard);
-        payload
-    }
-    fn gen_payload_xorshift() -> u128 {
-        let payload: u128 = XorShiftRng::from_entropy().sample(Standard);
-        payload
-    }
-    fn gen_payload_sfmt() -> u128 {
-        let payload: u128 = SFMT::from_entropy().sample(Standard);
-        payload
-    }
-    // Some more esoteric generators
-    fn gen_payload_hyperthread() -> u128 {
-        let first = generate_hyper_thread_safe_random_u64();
-        let second = generate_hyper_thread_safe_random_u64();
-        let byte_vec: Vec<u8> = first.to_le_bytes().to_vec().into_iter().chain(second.to_le_bytes().to_vec().into_iter()).collect();
-        u128::from_ne_bytes(*array_ref![byte_vec, 0, 16])
-    }
-    fn gen_payload_wyrng() -> u128 {
-        let mut seed = 8_675_309;
-        let first = wyrng(&mut seed);
-        let second = wyrng(&mut seed);
-        let byte_vec: Vec<u8> = first.to_le_bytes().to_vec().into_iter().chain(second.to_le_bytes().to_vec().into_iter()).collect();
-        u128::from_ne_bytes(*array_ref![byte_vec, 0, 16])
-    }
-
 
     /// Returns a Chrono::DateTime<Utc> representing the adjusted epoch
     /// # Examples
