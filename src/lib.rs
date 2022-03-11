@@ -6,9 +6,7 @@ pub mod rksuid {
     //! Module for creating, representing and transforming K-Sortable UIDs as described by Segment.io
 
     use base_encode::{from_str, to_string};
-    extern crate time;
     use chrono::prelude::*;
-    use time::Duration;
     use rand::prelude::*;
     use rand::distributions::Standard;
     use rand_pcg::Pcg64Mcg;
@@ -244,6 +242,6 @@ pub mod rksuid {
     /// ```
     pub fn to_std_epoch(timestamp: u32) -> DateTime<Utc> {
         let base_epoch = gen_epoch();
-        base_epoch + Duration::seconds(timestamp as i64)
+        base_epoch.checked_add_signed(chrono::Duration::seconds(i64::from(timestamp))).expect("timestamp is convertible")
     }
 }
