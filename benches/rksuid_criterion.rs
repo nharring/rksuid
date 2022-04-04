@@ -16,7 +16,7 @@ use rksuid::{deserialize, Ksuid as OtherKsuid};
 pub fn bench_new_ksuid_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("new");
     group.throughput(Throughput::Elements(1));
-    group.bench_function("new", |b| b.iter(|| OtherKsuid::new()));
+    group.bench_function("new", |b| b.iter(OtherKsuid::new));
     group.bench_function("new-with-timestamp", |b| {
         b.iter(|| OtherKsuid::new_with_timestamp(168582232))
     });
@@ -34,7 +34,7 @@ pub fn bench_new_ksuid_creation(c: &mut Criterion) {
 pub fn bench_old_ksuid_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("old-new");
     group.throughput(Throughput::Elements(1));
-    group.bench_function("old-new", |b| b.iter(|| ksuid::Ksuid::generate()));
+    group.bench_function("old-new", |b| b.iter(ksuid::Ksuid::generate));
     group.bench_function("old-new-with-payload", |b| {
         b.iter(|| ksuid::Ksuid::with_payload([0; 16]))
     });
@@ -67,7 +67,7 @@ pub fn bench_deserialize(c: &mut Criterion) {
     group.throughput(Throughput::Bytes(
         mem::size_of::<Ksuid>().try_into().unwrap(),
     ));
-    group.bench_function("deserialize ", |b| b.iter(|| deserialize(&serialized)));
+    group.bench_function("deserialize ", |b| b.iter(|| deserialize(serialized)));
     group.finish();
 }
 pub fn bench_old_deserialize(c: &mut Criterion) {
@@ -77,7 +77,7 @@ pub fn bench_old_deserialize(c: &mut Criterion) {
         mem::size_of::<Ksuid>().try_into().unwrap(),
     ));
     group.bench_function("old-deserialize ", |b| {
-        b.iter(|| ksuid::Ksuid::from_base62(&serialized))
+        b.iter(|| ksuid::Ksuid::from_base62(serialized))
     });
     group.finish();
 }
@@ -87,7 +87,7 @@ fn build_ksuid_vec(n: i32) -> Vec<OtherKsuid> {
     for i in 0..n {
         ksuids.push(OtherKsuid::new_with_timestamp(i as u32));
     }
-    return ksuids;
+    ksuids
 }
 
 fn build_old_ksuid_vec(n: i32) -> Vec<Ksuid> {
@@ -95,7 +95,7 @@ fn build_old_ksuid_vec(n: i32) -> Vec<Ksuid> {
     for _ in 0..n {
         ksuids.push(ksuid::Ksuid::generate());
     }
-    return ksuids;
+    ksuids
 }
 
 pub fn bench_sort_unstable(c: &mut Criterion) {

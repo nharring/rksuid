@@ -110,9 +110,9 @@ impl Ksuid {
     /// 0ujtsYcgvSTl8PAuAdqWYSMnLOv
     /// ```
     pub fn serialize(&self) -> String {
-        let mut merged_string: String;
+        
         let all_bytes = self.get_network_bytes();
-        merged_string = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
+        let mut merged_string: String = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
         if merged_string.char_indices().count() < 27 {
             // Zero pad the left side of the string to get it to the required 27
             let num_zeros = 27 - merged_string.char_indices().count();
@@ -155,12 +155,12 @@ impl Ksuid {
 
     /// Get Vec<u8> of the 16 bytes in the payload in Network byte order
     pub fn payload_network_bytes(&self) -> Vec<u8> {
-        self.payload.to_be_bytes().iter().copied().collect()
+        self.payload.to_be_bytes().to_vec()
     }
 
     /// Get Vec<u8> of the 16 bytes in teh payload in native byte order
     pub fn payload_bytes(&self) -> Vec<u8> {
-        self.payload.to_ne_bytes().iter().copied().collect()
+        self.payload.to_ne_bytes().to_vec()
     }
 
     /// Get Vec<String> of lines in formatted output
@@ -211,8 +211,8 @@ impl Ksuid {
     pub fn get_formatted(&self) -> String {
         let mut formatted: String = String::new();
         for line in self.get_formatted_lines().iter() {
-            formatted.push_str(&line);
-            formatted.push_str("\n");
+            formatted.push_str(line);
+            formatted.push('\n');
         }
         formatted
     }
