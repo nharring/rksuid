@@ -1,30 +1,30 @@
 [package]
 name = "rksuid"
-version = "0.4.0"
+version = "0.5.0"
 authors = ["nharring@gmail.com"]
-edition = "2018"
-description="Rust implementation of the Segment.io KSUID format"
-repository="https://github.com/nharring/rksuid"
-readme="README.md"
-license="MIT"
-keywords=["ksuid", "uuid"]
+edition = "2021"
+description = "Rust implementation of the Segment.io KSUID format"
+repository = "https://github.com/nharring/rksuid"
+readme = "README.md"
+license = "MIT"
+keywords = ["ksuid", "uuid"]
 
 
 [badges]
-travis-ci = {repository="nharring/rksuid", branch="master"}
+travis-ci = { repository = "nharring/rksuid", branch = "master" }
 codecov = { repository = "nharring/rksuid", branch = "master", service = "github" }
-maintenance = {status="actively-developed"}
+maintenance = { status = "actively-developed" }
 
 [dependencies]
-base-encode = "0.3.0"
-rand = "0.7"
-rand_core = "0.5.1"
+arrayref = "0.3.6"
+base-encode = "0.3.1"
 chrono = "0.4"
-time = "0.1"
-arrayref = "0.3.5"
-rand_pcg = "0.2.0"
-strum = "0.16.0"
-strum_macros = "0.16.0"
+lazy_static = "1.4"
+rand = "0.8.5"
+rand_core = "0.6.3"
+rand_pcg = "0.3.1"
+strum = "0.24.0"
+strum_macros = "0.24.0"
 
 [dev-dependencies]
 criterion = "0.3"

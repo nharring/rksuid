@@ -2,8 +2,8 @@ extern crate rksuid;
 
 #[cfg(test)]
 mod tests {
-    use ::rksuid::rksuid;
     use chrono::prelude::*;
+    use rksuid::Ksuid;
 
     // Test get_time
     #[test]
@@ -15,7 +15,7 @@ mod tests {
             .num_seconds();
         // Sanity check the expected timestamp for the ksuid
         assert_eq!(100000000, epoch_offset);
-        let ksuid = rksuid::new(Some(epoch_offset as u32), None);
+        let ksuid = Ksuid::new_with_timestamp(epoch_offset as u32);
         let ksuid_time = ksuid.get_time();
         assert_eq!(timestamp, ksuid_time);
     }
