@@ -11,20 +11,22 @@ use rand::seq::SliceRandom;
 use std::convert::TryInto;
 use std::mem;
 
-use rksuid::rksuid::{deserialize, new, Ksuid as OtherKsuid};
+use rksuid::{deserialize, Ksuid as OtherKsuid};
 
 pub fn bench_new_ksuid_creation(c: &mut Criterion) {
     let mut group = c.benchmark_group("new");
     group.throughput(Throughput::Elements(1));
-    group.bench_function("new", |b| b.iter(|| new(None, None)));
+    group.bench_function("new", |b| b.iter(|| OtherKsuid::new()));
     group.bench_function("new-with-timestamp", |b| {
-        b.iter(|| new(Some(168582232), None))
+        b.iter(|| OtherKsuid::new_with_timestamp(168582232))
     });
     group.bench_function("new-with-payload", |b| {
-        b.iter(|| new(None, Some(123456789)))
+        b.iter(|| OtherKsuid::new_with_payload(123456789))
     });
     group.bench_function("new-with-timestamp-and-payload", |b| {
-        b.iter(|| new(Some(black_box(168582232)), Some(black_box(123456789))))
+        b.iter(|| {
+            OtherKsuid::new_with_timestamp_and_payload(black_box(168582232), black_box(123456789))
+        })
     });
     group.finish();
 }
@@ -43,7 +45,7 @@ pub fn bench_old_ksuid_creation(c: &mut Criterion) {
 }
 
 pub fn bench_serialize(c: &mut Criterion) {
-    let ksuid = rksuid::rksuid::new(None, None);
+    let ksuid = OtherKsuid::new();
     let mut group = c.benchmark_group("serialize");
     let example = "0ujtsYcgvSTl8PAuAdqWYSMnLOv";
     group.throughput(Throughput::Bytes(example.len().try_into().unwrap()));
@@ -83,7 +85,7 @@ pub fn bench_old_deserialize(c: &mut Criterion) {
 fn build_ksuid_vec(n: i32) -> Vec<OtherKsuid> {
     let mut ksuids: Vec<OtherKsuid> = Vec::new();
     for i in 0..n {
-        ksuids.push(new(Some(i as u32), None));
+        ksuids.push(OtherKsuid::new_with_timestamp(i as u32));
     }
     return ksuids;
 }

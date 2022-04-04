@@ -2,18 +2,18 @@ extern crate rksuid;
 
 #[cfg(test)]
 mod tests {
-    use ::rksuid::rksuid;
+    use rksuid::Ksuid;
 
     // SerDe tests
     #[test]
     fn test_serialize_with_random_data_returns_right_length() {
-        let ksuid = rksuid::new(None, None);
+        let ksuid = Ksuid::new();
         let serialized = ksuid.serialize();
         assert_eq!(serialized.char_indices().count(), 27);
     }
     #[test]
     fn test_serialize_deserialize() {
-        let ksuid = rksuid::new(None, None);
+        let ksuid = Ksuid::new();
         let serialized = ksuid.serialize();
         let ksuid2 = rksuid::deserialize(&serialized);
         assert_eq!(ksuid, ksuid2);
