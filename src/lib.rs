@@ -3,6 +3,8 @@ extern crate arrayref;
 extern crate strum;
 extern crate strum_macros;
 
+use std::fmt;
+
 /// Module for creating, representing and transforming K-Sortable UIDs as described by Segment.io
 use base_encode::{from_str, to_string};
 use chrono::prelude::*;
@@ -44,6 +46,36 @@ pub enum RngType {
 impl Default for Ksuid {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+impl fmt::Display for Ksuid {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{}", self.serialize())
+    }
+}
+
+impl From<String> for Ksuid {
+    fn from(s: String) -> Ksuid {
+        deserialize(&s)
+    }
+}
+
+impl From<Ksuid> for String {
+    fn from(k: Ksuid) -> String {
+        k.serialize()
+    }
+}
+
+impl From<Ksuid> for Vec<u8> {
+    fn from(k: Ksuid) -> Vec<u8> {
+        k.get_bytes()
+    }
+}
+
+impl From<Vec<u8>> for Ksuid {
+    fn from(b: Vec<u8>) -> Ksuid {
+        Ksuid::from_native_bytes(b)
     }
 }
 
