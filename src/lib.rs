@@ -69,13 +69,13 @@ impl From<Ksuid> for String {
 
 impl From<Ksuid> for Vec<u8> {
     fn from(k: Ksuid) -> Vec<u8> {
-        k.get_bytes()
+        k.get_network_bytes()
     }
 }
 
 impl From<Vec<u8>> for Ksuid {
     fn from(b: Vec<u8>) -> Ksuid {
-        Ksuid::from_native_bytes(b)
+        Ksuid::from_network_bytes(b)
     }
 }
 
