@@ -41,6 +41,12 @@ pub enum RngType {
     PCG64FAST,
 }
 
+impl Default for Ksuid {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Ksuid {
     /// Creates new Ksuid with current timestamp and random payload
     ///
@@ -110,9 +116,9 @@ impl Ksuid {
     /// 0ujtsYcgvSTl8PAuAdqWYSMnLOv
     /// ```
     pub fn serialize(&self) -> String {
-        
         let all_bytes = self.get_network_bytes();
-        let mut merged_string: String = to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
+        let mut merged_string: String =
+            to_string(array_ref![all_bytes, 0, 20], 62, ALPHABET).unwrap();
         if merged_string.char_indices().count() < 27 {
             // Zero pad the left side of the string to get it to the required 27
             let num_zeros = 27 - merged_string.char_indices().count();
